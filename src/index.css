@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg: #13111C;
+    --surface: #1E1A2E;
+    --border: #2E2A45;
+    --accent-primary: #7C6AF7;
+    --accent-secondary: #4F9CF9;
+    --accent-warning: #F59E0B;
+    --accent-danger: #EF4444;
+    --accent-success: #10B981;
+    --text-primary: #F0EEFF;
+    --text-muted: #8B87A8;
+  }
+
+  * {
+    @apply border-[var(--border)];
+  }
+
+  body {
+    @apply bg-[var(--bg)] text-[var(--text-primary)] antialiased;
+    font-family: 'Sora', sans-serif;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+}
