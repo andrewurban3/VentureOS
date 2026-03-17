@@ -160,6 +160,7 @@ export interface MarketSizingModel {
   tam: number
   sam: number
   som: number
+  cagr?: number
   methodology: string
   assumptions: FinancialAssumption[]
   generatedAt: string
@@ -476,12 +477,47 @@ export interface SignedSowEntry {
   status: string
 }
 
+export interface AcquisitionFunnelStage {
+  stage: string
+  count: number
+}
+
 export interface GtmTracker {
   gtmPlan: string
   pricingImplementationPlan: string
   signedSowTracker: SignedSowEntry[]
+  acquisitionFunnel?: AcquisitionFunnelStage[]
   generatedAt: string
   source: 'FOUNDER' | 'VL' | 'AI_SYNTHESIS'
+}
+
+export interface KpiDefinition {
+  id: string
+  name: string
+  target: number
+  unit?: string
+  direction?: 'higher' | 'lower' // higher = above target is good, lower = below target is good
+}
+
+export interface KpiSnapshot {
+  kpiId: string
+  date: string // YYYY-MM-DD
+  value: number
+}
+
+export interface KpiTracker {
+  definitions: KpiDefinition[]
+  snapshots: KpiSnapshot[]
+}
+
+export interface TeamMember {
+  id: string
+  name: string
+  role: string
+  email?: string
+  allocationPct: number
+  addedAt: string
+  updatedAt: string
 }
 
 export interface Venture {
@@ -552,6 +588,7 @@ export interface Venture {
   ventureSuccessCriteria?: string[]
   revenueModel?: string
   businessKpis?: string[]
+  kpiTracker?: KpiTracker
   featurePrdList?: FeaturePrdList
   sprintPlan?: SprintPlan
   clientFeedbackSummary?: ClientFeedbackSummary
@@ -559,4 +596,5 @@ export interface Venture {
   pricingLab?: PricingLab
   pricingImplementationTracker?: PricingImplementationTracker
   gtmTracker?: GtmTracker
+  teamMembers?: TeamMember[]
 }

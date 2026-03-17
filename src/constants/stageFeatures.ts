@@ -45,10 +45,13 @@ export const STAGE_FEATURES: Record<string, StageFeature[]> = {
     { id: 'client-feedback', name: 'Client Feedback', path: '/build/client-feedback' },
     { id: 'roadmap-updater', name: 'Roadmap Updater', path: '/build/roadmap' },
     { id: 'pricing-lab', name: 'Pricing Lab', path: '/build/pricing-lab' },
+    { id: 'business', name: 'Business', path: '/build/business' },
   ],
   '07': [
     { id: 'pricing-tracker', name: 'Pricing Tracker', path: '/commercial/pricing' },
     { id: 'gtm-tracker', name: 'GTM Tracker', path: '/commercial/gtm' },
+    { id: 'client-list', name: 'Client List', path: '/commercial/client-list' },
+    { id: 'business', name: 'Business', path: '/commercial/business' },
   ],
 }
 
@@ -124,6 +127,7 @@ export const FOUNDER_STAGES: FounderStage[] = [
       { id: 'client-feedback', name: 'Client Feedback', path: '/build/client-feedback' },
       { id: 'roadmap-updater', name: 'Roadmap Updater', path: '/build/roadmap' },
       { id: 'pricing-lab', name: 'Pricing Lab', path: '/build/pricing-lab' },
+      { id: 'business', name: 'Business', path: '/build/business' },
     ],
   },
   {
@@ -134,6 +138,8 @@ export const FOUNDER_STAGES: FounderStage[] = [
     features: [
       { id: 'pricing-tracker', name: 'Pricing Tracker', path: '/commercial/pricing' },
       { id: 'gtm-tracker', name: 'GTM Tracker', path: '/commercial/gtm' },
+      { id: 'client-list', name: 'Client List', path: '/commercial/client-list' },
+      { id: 'business', name: 'Business', path: '/commercial/business' },
     ],
   },
 ]
@@ -146,4 +152,5 @@ export const STAGE_BASE_PATHS: Record<string, string> = {
   '05': '/mvp-ready',
   '06': '/build',
   '07': '/commercial',
+  'stage-gate': '/stage-gate',
 }

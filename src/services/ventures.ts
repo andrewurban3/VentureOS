@@ -11,9 +11,11 @@ import type {
   DesignPartnerCandidate, DesignPartnerFeedbackSummary, MvpFeatureItem,
   TechnicalArchitecture, ProductRoadmap, FeaturePrdList, SprintPlan,
   ClientFeedbackSummary, UpdatedRoadmap, PricingLab, PricingImplementationTracker, GtmTracker,
+  KpiTracker, TeamMember,
 } from '@/types/venture'
 import type { LensScoreResult, CompositeSignal } from '@/constants/scoring'
 import { syncVentureToGraph } from '@/services/knowledgeGraph'
+import { logActivity } from '@/services/activityFeed'
 
 // ── Row types for Supabase responses ─────────────────────────
 
@@ -74,7 +76,7 @@ export async function hydrateVenture(id: string): Promise<Venture | null> {
     dpPipelineRes, dpFeedbackRes, mvpFeaturesRes,
     techArchRes, roadmapsRes, prdListRes, sprintRes,
     clientFbRes, updatedRoadmapRes, pricingLabRes,
-    pricingImplRes, gtmRes,
+    pricingImplRes, gtmRes, teamMembersRes,
   ] = await Promise.all([
     supabase.from('ventures').select('*').eq('id', id).single(),
     supabase.from('idea_intakes').select('*').eq('venture_id', id).maybeSingle(),
@@ -111,6 +113,7 @@ export async function hydrateVenture(id: string): Promise<Venture | null> {
     supabase.from('pricing_labs').select('*').eq('venture_id', id).maybeSingle(),
     supabase.from('pricing_implementation_trackers').select('*').eq('venture_id', id).maybeSingle(),
     supabase.from('gtm_trackers').select('*').eq('venture_id', id).maybeSingle(),
+    supabase.from('team_members').select('*').eq('venture_id', id).order('added_at'),
   ])
 
   if (ventureRes.error) return null
@@ -505,9 +508,22 @@ export async function hydrateVenture(id: string): Promise<Venture | null> {
       gtmPlan: (g.gtm_plan ?? '') as string,
       pricingImplementationPlan: (g.pricing_implementation_plan ?? '') as string,
       signedSowTracker: (g.signed_sow_tracker ?? []) as GtmTracker['signedSowTracker'],
+      acquisitionFunnel: (g.acquisition_funnel ?? []) as GtmTracker['acquisitionFunnel'],
       generatedAt: g.generated_at as string,
       source: (g.source ?? 'VL') as GtmTracker['source'],
     }
+  }
+
+  if (teamMembersRes.data) {
+    venture.teamMembers = (teamMembersRes.data as Record<string, unknown>[]).map((tm) => ({
+      id: tm.id as string,
+      name: tm.name as string,
+      role: tm.role as string,
+      email: tm.email as string | undefined,
+      allocationPct: (tm.allocation_pct ?? 100) as number,
+      addedAt: tm.added_at as string,
+      updatedAt: tm.updated_at as string,
+    })) as TeamMember[]
   }
 
   return venture
@@ -519,20 +535,20 @@ export async function createVentureInDb(name: string): Promise<Venture> {
   const id = crypto.randomUUID()
   const now = new Date().toISOString()
 
-  const { error: ventureError } = await supabase
-    .from('ventures')
-    .insert({
-      id,
-      name_value: name.trim(),
-      name_source: 'FOUNDER',
-      name_timestamp: now,
-      stage_value: '02',
-      stage_source: 'VL',
-      founder_value: 'Founder',
-      founder_source: 'VL',
-      status_value: 'On Track',
-      status_source: 'VL',
-    })
+  const payload: Record<string, unknown> = {
+    id,
+    name_value: name.trim(),
+    name_source: 'FOUNDER',
+    name_timestamp: now,
+    stage_value: '02',
+    stage_source: 'VL',
+    founder_value: 'Founder',
+    founder_source: 'VL',
+    status_value: 'On Track',
+    status_source: 'VL',
+  }
+
+  const { error: ventureError } = await supabase.from('ventures').insert(payload)
 
   if (ventureError) throw ventureError
 
@@ -574,7 +590,19 @@ export async function saveVentureUpdates(id: string, updates: Partial<Venture>):
   if (updates.name || updates.stage || updates.founder || updates.status || updates.description) {
     const patch: Record<string, unknown> = { updated_at: new Date().toISOString() }
     if (updates.name) { patch.name_value = updates.name.value; patch.name_source = updates.name.source; patch.name_timestamp = updates.name.timestamp }
-    if (updates.stage) { patch.stage_value = updates.stage.value; patch.stage_source = updates.stage.source }
+    if (updates.stage) {
+      patch.stage_value = updates.stage.value
+      patch.stage_source = updates.stage.source
+      run(async () => {
+        const { data } = await supabase.from('ventures').select('stage_value').eq('id', id).single()
+        const fromStage = (data as { stage_value?: string } | null)?.stage_value
+        await logActivity({
+          ventureId: id,
+          action: 'stage_changed',
+          details: { fromStage, toStage: updates.stage!.value },
+        }).catch(() => {})
+      })
+    }
     if (updates.founder) { patch.founder_value = updates.founder.value; patch.founder_source = updates.founder.source }
     if (updates.status) { patch.status_value = updates.status.value; patch.status_source = updates.status.source }
     if (updates.description) { patch.description_value = updates.description.value; patch.description_source = updates.description.source }
@@ -971,12 +999,14 @@ export async function saveVentureUpdates(id: string, updates: Partial<Venture>):
     updates.productRoadmap ||
     updates.ventureSuccessCriteria !== undefined ||
     updates.revenueModel !== undefined ||
-    updates.businessKpis !== undefined
+    updates.businessKpis !== undefined ||
+    updates.kpiTracker !== undefined
   ) {
     const r = updates.productRoadmap
     const vsc = updates.ventureSuccessCriteria
     const revModel = updates.revenueModel
     const bizKpis = updates.businessKpis
+    const kpiTracker = updates.kpiTracker
     run(async () => {
       const { data: existing } = await supabase.from('product_roadmaps').select('*').eq('venture_id', id).maybeSingle()
       const now = new Date().toISOString()
@@ -988,6 +1018,7 @@ export async function saveVentureUpdates(id: string, updates: Partial<Venture>):
         venture_success_criteria: vsc ?? existing?.venture_success_criteria ?? [],
         revenue_model: revModel ?? existing?.revenue_model ?? '',
         business_kpis: bizKpis ?? existing?.business_kpis ?? [],
+        kpi_tracker: kpiTracker ?? existing?.kpi_tracker ?? { definitions: [], snapshots: [] },
         updated_at: now,
       }
       await supabase.from('product_roadmaps').upsert(payload, { onConflict: 'venture_id' })
@@ -1063,10 +1094,31 @@ export async function saveVentureUpdates(id: string, updates: Partial<Venture>):
       gtm_plan: g.gtmPlan,
       pricing_implementation_plan: g.pricingImplementationPlan,
       signed_sow_tracker: g.signedSowTracker,
+      acquisition_funnel: g.acquisitionFunnel ?? [],
       generated_at: g.generatedAt,
       source: g.source,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'venture_id' }))
+  }
+  if (updates.teamMembers) {
+    const members = updates.teamMembers
+    run(async () => {
+      await supabase.from('team_members').delete().eq('venture_id', id)
+      if (members.length > 0) {
+        const rows = members.map((m) => ({
+          id: m.id,
+          venture_id: id,
+          name: m.name,
+          role: m.role,
+          email: m.email ?? null,
+          allocation_pct: m.allocationPct ?? 100,
+          added_at: m.addedAt,
+          updated_at: m.updatedAt ?? m.addedAt,
+        }))
+        const { error } = await supabase.from('team_members').insert(rows)
+        if (error) throw error
+      }
+    })
   }
 
   await Promise.all(ops)

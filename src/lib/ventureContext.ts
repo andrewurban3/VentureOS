@@ -143,6 +143,7 @@ function buildFinancialModelsSection(venture: Venture): string {
     const ms = fm.marketSizing
     lines.push('\nMarket Sizing:')
     lines.push(`  TAM: $${ms.tam.toLocaleString()} / SAM: $${ms.sam.toLocaleString()} / SOM: $${ms.som.toLocaleString()}`)
+    if (ms.cagr != null) lines.push(`  CAGR: ${ms.cagr}%`)
     lines.push(`  Methodology: ${ms.methodology}`)
   }
 

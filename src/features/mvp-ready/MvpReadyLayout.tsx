@@ -13,7 +13,7 @@ export function MvpReadyLayout() {
           <StageProgressSummary title="MVP Readiness Progress" items={getMvpReadinessStatus(venture)} />
         </div>
       )}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-hidden">
         <Outlet />
       </div>
     </div>

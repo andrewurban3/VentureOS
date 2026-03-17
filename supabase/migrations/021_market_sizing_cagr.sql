@@ -1,0 +1,4 @@
+-- Market Sizing: add CAGR (compound annual growth rate) to market_sizing jsonb.
+-- No DDL required: financial_models.market_sizing is jsonb; new field is added to JSON.
+-- Type: cagr number (percentage, e.g. 22.5 for 22.5%)
+-- Used by: Stage Gate OKR "CAGR > 20%" for Market Opportunity (Gate 02->03)

@@ -27,10 +27,16 @@ Guidelines:
 - narrative: Reference client companies by name. End with 1-2 actionable recommendations.
 - clientCompanyNames: List of client companies that contributed to this feedback (from the notes provided).`
 
+export interface PilotTranscript {
+  transcript: string
+  company: string
+}
+
 export async function buildClientFeedbackBlocks(
   venture: Venture,
   pilotNotesText: string,
-  companyNamesFromUser: string[] = []
+  companyNamesFromUser: string[] = [],
+  pilotTranscripts: PilotTranscript[] = []
 ): Promise<SystemBlock[]> {
   let context: string
   try {
@@ -54,6 +60,15 @@ export async function buildClientFeedbackBlocks(
     context = buildVentureContext(venture, { sections: 'full', maxChars: 8000 })
   }
 
+  let pilotContent = pilotNotesText || ''
+  if (pilotTranscripts.length > 0) {
+    const transcriptBlocks = pilotTranscripts.map(
+      (t) => `--- ${t.company || 'Unknown'} ---\n\n${t.transcript}`
+    )
+    pilotContent = [pilotContent, ...transcriptBlocks].filter(Boolean).join('\n\n---\n\n')
+  }
+  if (!pilotContent) pilotContent = '(No notes or transcripts provided.)'
+
   const companiesHint =
     companyNamesFromUser.length > 0
       ? `\nClient companies to tag: ${companyNamesFromUser.join(', ')}`
@@ -63,7 +78,7 @@ export async function buildClientFeedbackBlocks(
     { type: 'text', text: CLIENT_FEEDBACK_PERSONA, cache_control: { type: 'ephemeral' } },
     {
       type: 'text',
-      text: `VENTURE CONTEXT:\n${context}\n\nPILOT FEEDBACK NOTES:\n${pilotNotesText || '(No notes provided.)'}${companiesHint}\n\nSynthesise the feedback. Return ONLY valid JSON.`,
+      text: `VENTURE CONTEXT:\n${context}\n\nPILOT FEEDBACK NOTES:\n${pilotContent}${companiesHint}\n\nSynthesise the feedback. Return ONLY valid JSON.`,
     },
   ]
 }

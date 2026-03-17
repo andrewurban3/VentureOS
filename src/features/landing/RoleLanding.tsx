@@ -1,15 +1,11 @@
-import { useNavigate } from 'react-router-dom'
 import { useRole } from '@/components/RolePicker'
 import type { Role } from '@/components/RolePicker'
 
 export function RoleLanding() {
   const [, setRole] = useRole()
-  const navigate = useNavigate()
 
-  const handleSelect = (role: Role) => {
-    setRole(role)
-    const path = role === 'venture-lead' ? '/venture-lead' : '/founder'
-    navigate(path)
+  const handleSelect = (r: Role) => {
+    setRole(r)
   }
 
   const cardStyle = {

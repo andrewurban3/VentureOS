@@ -156,7 +156,7 @@ export function getDemoVenturePayload(): Partial<Venture> {
           threatRationale: 'They focus on large enterprises.',
           ourDifferentiation: 'Mid-market native, audit prep and attestation out of the box.',
           status: 'accepted',
-          source: 'AI_RESEARCH',
+          source: 'COMPETITOR',
         },
       ],
       landscapeSummary: 'The compliance automation market is dominated by enterprise-focused players (OneTrust, ServiceNow GRC) and tech-sector automation (Vanta, Drata). Mid-market financial services is under-served: existing tools are either too expensive or not tailored to FS-specific audit prep workflows.',
@@ -488,6 +488,12 @@ export function getRilletVenturePayload(): Partial<Venture> {
       buyerRole: 'VP Finance / Controller / CFO',
       decisionMakingUnit: 'Finance, Accounting, FP&A',
       buyingTrigger: 'Outgrowing QuickBooks; frustrated with NetSuite implementation cost and rigidity; preparing for audit or IPO.',
+      buyingCharacteristics: [
+        { characteristic: 'Recently raised Series A/B or preparing for IPO', importance: 'High' as const },
+        { characteristic: 'Finance team size 3-15 FTEs', importance: 'High' as const },
+        { characteristic: 'Multi-entity or international operations', importance: 'Medium' as const },
+        { characteristic: 'Complex revenue recognition (subscription, usage-based)', importance: 'High' as const },
+      ],
       painPoints: [
         { pain: 'Manual month-end close takes 10-15 days', severity: 'High' as const, evidence: 'Finance teams spend 30-40% of time on reconciliation and close workflows.' },
         { pain: 'Legacy ERP is rigid and expensive to customise', severity: 'High' as const, evidence: 'NetSuite implementations cost $200K+ and take 6+ months.' },
@@ -533,7 +539,7 @@ export function getRilletVenturePayload(): Partial<Venture> {
           threatRationale: 'Strong in our target market but lacks the technical architecture for real-time AI.',
           ourDifferentiation: 'AI-native from ground up; real-time perpetual ledger vs batch; modern developer experience.',
           status: 'accepted',
-          source: 'AI_RESEARCH',
+          source: 'COMPETITOR',
         },
         {
           id: crypto.randomUUID(),
@@ -549,7 +555,7 @@ export function getRilletVenturePayload(): Partial<Venture> {
           threatRationale: 'Competing for mindshare in AI accounting but targeting a smaller segment.',
           ourDifferentiation: 'Enterprise-grade architecture handles 100M+ transactions/day; multi-entity; revenue recognition.',
           status: 'accepted',
-          source: 'AI_RESEARCH',
+          source: 'FOUNDER',
         },
       ],
       landscapeSummary: 'The mid-market accounting/ERP space is dominated by legacy players (NetSuite, Sage Intacct) built on batch-processing architectures from the 2000s. New AI-first entrants (Puzzle, Ledge) target smaller companies. Rillet occupies a unique position: enterprise-grade scale with AI-native architecture, targeting the high-growth mid-market that is both under-served and high-value.',
@@ -596,6 +602,78 @@ export function getRilletVenturePayload(): Partial<Venture> {
         content: 'Data migration is the #1 objection in ERP sales. Rillet\'s 2-4 week migration vs 6-month NetSuite implementation is a genuine competitive advantage that should be front and centre in GTM messaging.',
         founderResponse: 'Agreed — we\'re building this into our sales deck as the opening wedge.',
         savedAt: now,
+      },
+    ],
+
+    // ── Discover Research ───────────────────────────────────
+    discover: {
+      research: [
+        {
+          id: crypto.randomUUID(),
+          type: 'vc_thesis',
+          query: 'VC investment thesis for AI-native ERP and cloud accounting',
+          content: 'The AI-native accounting and ERP space is attracting significant venture capital, driven by the convergence of (1) legacy ERP replacement cycles, (2) AI capability thresholds for automating accounting judgement, and (3) mid-market digital transformation. Key themes: architectural moats (perpetual ledger vs batch), data gravity as defensibility, and the underserved high-growth segment between QuickBooks and NetSuite. Notable deals: Rillet $70M Series B (a16z, ICONIQ), Puzzle $27M Series A, Ledge seed. Investors favour founders with fintech/enterprise ops experience and clear path to $100M+ ARR.',
+          citations: [
+            { title: 'Rillet raises $70M Series B for AI-native ERP', url: 'https://techcrunch.com/rillet-series-b' },
+            { title: 'Cloud ERP Market 2025-2030', url: 'https://www.gartner.com/cloud-erp-2025' },
+          ],
+          source: 'AI_RESEARCH',
+          generatedAt: now,
+        },
+        {
+          id: crypto.randomUUID(),
+          type: 'market_signal',
+          query: 'Market signals for mid-market accounting software adoption',
+          content: 'Several converging signals support demand for AI-native accounting: (1) Month-end close times at mid-market companies average 10-15 days, with finance teams spending 30-40% of time on manual reconciliation. (2) NetSuite implementation costs have risen to $200K+ with 6+ month timelines, creating a wedge for faster alternatives. (3) IPO and audit readiness are driving urgency — companies preparing for public markets need audit-ready systems. (4) Multi-entity and international expansion is increasing complexity beyond QuickBooks capability. The shift from batch to real-time financial visibility is creating a generational opportunity for new entrants.',
+          citations: [
+            { title: 'Finance Team Productivity Benchmarks 2024', url: 'https://example.com/finance-benchmarks' },
+            { title: 'NetSuite Implementation Cost Study', url: 'https://example.com/netsuite-cost' },
+          ],
+          source: 'AI_RESEARCH',
+          generatedAt: now,
+        },
+      ],
+    },
+
+    // ── Citations ────────────────────────────────────────────
+    citations: [
+      {
+        id: crypto.randomUUID(),
+        source: 'AI_RESEARCH',
+        title: 'Gartner Cloud ERP Market Forecast 2025',
+        url: 'https://www.gartner.com/en/documents/cloud-erp-2025',
+        excerpt: 'Global cloud ERP market exceeds $50B with mid-market segment growing at 15%+ CAGR.',
+        context: 'Market sizing for TAM validation',
+        dimensionId: '06',
+        generatedAt: now,
+      },
+      {
+        id: crypto.randomUUID(),
+        source: 'CLIENT_INTERVIEW',
+        title: 'Postscript VP Finance interview',
+        excerpt: 'Our close is now 3 days. I\'ve told three other VPs of Finance about Rillet.',
+        context: 'Customer validation of close time reduction',
+        dimensionId: '08',
+        generatedAt: now,
+      },
+      {
+        id: crypto.randomUUID(),
+        source: 'FOUNDER',
+        title: 'Founder market sizing notes',
+        excerpt: '50,000+ companies in our ICP have outgrown QuickBooks but refuse 6-month NetSuite implementation.',
+        context: 'SOM and pipeline sizing',
+        dimensionId: '06',
+        generatedAt: now,
+      },
+      {
+        id: crypto.randomUUID(),
+        source: 'AI_RESEARCH',
+        title: 'a16z Series B announcement',
+        url: 'https://a16z.com/portfolio/rillet',
+        excerpt: 'Rillet raises $70M Series B led by a16z and ICONIQ Growth for AI-native ERP.',
+        context: 'Traction and investor validation',
+        dimensionId: '08',
+        generatedAt: now,
       },
     ],
 
@@ -663,6 +741,7 @@ export function getRilletVenturePayload(): Partial<Venture> {
         tam: 50000000000,
         sam: 8000000000,
         som: 240000000,
+        cagr: 22,
         methodology: 'Top-down: Global cloud ERP market ($50B, Gartner 2025) narrowed to mid-market AI-native accounting/GL segment (~$8B SAM). SOM based on capturing 3% of SAM in 3-5 years, targeting high-growth companies in SaaS, e-commerce, and professional services across US and Europe.',
         assumptions: [
           { id: 'tam-source', label: 'Global cloud ERP market', value: 50000000000, source: 'AI_RESEARCH', confidence: 'High' as const, citation: { title: 'Gartner Cloud ERP Market Forecast 2025', url: 'https://www.gartner.com/en/documents/cloud-erp-2025' }, updatedAt: now },
@@ -828,7 +907,7 @@ export function getRilletVenturePayload(): Partial<Venture> {
           impact: 'Medium',
           mitigation: 'Product-led onboarding reduces sales-touch for SMB. Enterprise deals justify longer cycles given $100K+ ACV. Invest in customer success to drive NRR above 130%.',
           residualRisk: 'Low — proven go-to-market at current scale.',
-          source: 'AI_SYNTHESIS',
+          source: 'VL',
         },
         {
           id: crypto.randomUUID(),
@@ -876,7 +955,7 @@ export function getRilletVenturePayload(): Partial<Venture> {
           rationale: 'High-growth SaaS with complex revenue recognition needs. Early Rillet customer — reduced close from 14 to 3 days.',
           contactRole: 'VP Finance',
           status: 'qualified',
-          source: 'AI_RESEARCH',
+          source: 'CLIENT_INTERVIEW',
           generatedAt: now,
         },
         {
@@ -1384,8 +1463,824 @@ export function getRilletVenturePayload(): Partial<Venture> {
         { company: 'Windsurf (Codeium)', status: 'LOI' },
         { company: 'Sotheby\'s', status: 'Conversation' },
       ],
+      acquisitionFunnel: [
+        { stage: 'Lead', count: 2 },
+        { stage: 'Qualified', count: 3 },
+        { stage: 'Proposal', count: 0 },
+        { stage: 'Signed', count: 1 },
+      ],
       generatedAt: now,
       source: 'VL',
     },
+
+    // ── Business Planning (Stage 05) ───────────────────────────
+    ventureSuccessCriteria: [
+      '$50M ARR within 3 years',
+      'Net revenue retention > 130%',
+      '500+ customers across SaaS, e-commerce, and professional services',
+      'CAC payback < 6 months',
+      'SOC 2 Type II and enterprise security certification',
+    ],
+    revenueModel: 'SaaS subscription priced by entity count and transaction volume. Starter tier ($72K/year) for single-entity; Growth tier ($120K/year) for multi-entity; Enterprise tier (custom, anchor $200K+) for unlimited scale. Expansion driven by multi-product adoption (rev rec, multi-entity, AP/AR). Gross margins 80%+.',
+    businessKpis: [
+      'Monthly ARR target: $2M',
+      'Active customers: 200+',
+      'Daily transactions: 100M+',
+      'NRR > 130%',
+      'CAC payback < 4 months',
+    ],
+
+    // ── KPI Tracker ──────────────────────────────────────────
+    kpiTracker: {
+      definitions: [
+        { id: 'kpi-arr', name: 'Monthly ARR', target: 2000000, unit: 'USD', direction: 'higher' },
+        { id: 'kpi-customers', name: 'Active customers', target: 200, unit: '', direction: 'higher' },
+        { id: 'kpi-transactions', name: 'Daily transactions', target: 100000000, unit: '', direction: 'higher' },
+      ],
+      snapshots: [
+        { kpiId: 'kpi-arr', date: '2025-01-31', value: 1200000 },
+        { kpiId: 'kpi-arr', date: '2025-02-28', value: 1500000 },
+        { kpiId: 'kpi-arr', date: '2025-03-31', value: 1850000 },
+        { kpiId: 'kpi-customers', date: '2025-01-31', value: 180 },
+        { kpiId: 'kpi-customers', date: '2025-02-28', value: 195 },
+        { kpiId: 'kpi-customers', date: '2025-03-31', value: 210 },
+        { kpiId: 'kpi-transactions', date: '2025-01-31', value: 85000000 },
+        { kpiId: 'kpi-transactions', date: '2025-02-28', value: 95000000 },
+        { kpiId: 'kpi-transactions', date: '2025-03-31', value: 105000000 },
+      ],
+    },
+
+    // ── Team Members ─────────────────────────────────────────
+    teamMembers: [
+      {
+        id: crypto.randomUUID(),
+        name: 'Nicolas Kopp',
+        role: 'CEO',
+        allocationPct: 100,
+        addedAt: now,
+        updatedAt: now,
+      },
+      {
+        id: crypto.randomUUID(),
+        name: 'Stelios Modes',
+        role: 'CTO',
+        allocationPct: 100,
+        addedAt: now,
+        updatedAt: now,
+      },
+      {
+        id: crypto.randomUUID(),
+        name: 'Sarah Chen',
+        role: 'VP Finance',
+        allocationPct: 100,
+        addedAt: now,
+        updatedAt: now,
+      },
+    ],
+  }
+}
+
+/**
+ * Returns a partial Venture payload for the "Cranium" demo venture.
+ * Cranium AI is an AI security, governance, and compliance platform spun out of KPMG Studio.
+ * Founded by Jonathan Dambrot. $32M total funding. Stage 06 (Build & Pilot).
+ * Populates all stages 01-07 with varied source tags.
+ */
+export function getCraniumVenturePayload(): Partial<Venture> {
+  const now = new Date().toISOString()
+  const craniumInterviewId1 = crypto.randomUUID()
+  const craniumInterviewId2 = crypto.randomUUID()
+
+  return {
+    name: makeTrackedField('Cranium', 'VL'),
+    stage: makeTrackedField('06', 'VL'),
+    founder: makeTrackedField('Jonathan Dambrot', 'VL'),
+    status: makeTrackedField('On Track', 'VL'),
+    description: makeTrackedField(
+      'AI security, governance, and compliance platform. Discovers and inventories AI systems, automated red teaming (Cranium Arena), compliance automation (EU AI Act, NIST AI RMF). Spun out of KPMG Studio. $32M raised from SYN Ventures, Telstra Ventures, KPMG.',
+      'VL'
+    ),
+
+    // ── Idea Intake ──────────────────────────────────────────
+    ideaIntake: {
+      messages: [
+        {
+          role: 'user',
+          content: 'We are building an AI security and governance platform. The core problem: enterprises have zero visibility into their AI ecosystems — which models, datasets, and tools are in use. Traditional security tools don\'t work for AI. We help CISOs and Chief AI Officers discover shadow AI, test systems against adversarial attacks, and automate compliance for EU AI Act and NIST AI RMF.',
+          source: 'FOUNDER',
+          timestamp: now,
+        },
+        {
+          role: 'assistant',
+          content: 'That\'s a timely problem with the EU AI Act deadline in 2026. Who is the primary buyer — CISO, Chief AI Officer, or compliance?',
+          source: 'VERA',
+          timestamp: now,
+        },
+        {
+          role: 'user',
+          content: 'CISO and Chief AI Officer at regulated enterprises — financial services, life sciences, healthcare. Company size: Global 2000. We spun out of KPMG Studio in April 2023. $7M seed from SYN Ventures, $25M Series A from Telstra Ventures. Our platform includes Detect AI, CodeSensor, Cranium Arena for red teaming, and ComplianceAgent for framework automation.',
+          source: 'FOUNDER',
+          timestamp: now,
+        },
+      ],
+      dimensionCoverage: [
+        { id: '01', status: 'complete', summary: 'Core concept: AI security and governance platform for enterprise visibility and compliance.', flags: [] },
+        { id: '02', status: 'complete', summary: 'Pain: shadow AI proliferation, no visibility into AI systems, regulatory deadlines.', flags: [] },
+        { id: '03', status: 'complete', summary: 'ICP: CISO/CAO at regulated enterprises (FinServ, Life Sciences).', flags: [] },
+        { id: '04', status: 'complete', summary: 'Solution: Detect AI, CodeSensor, Arena red teaming, ComplianceAgent, AI Cards.', flags: [] },
+        { id: '05', status: 'complete', summary: 'Revenue: enterprise SaaS, $100-500K ACV.', flags: [] },
+        { id: '06', status: 'complete', summary: 'Market: AI security $3.5B TAM growing to $25.6B at 22% CAGR.', flags: [] },
+        { id: '07', status: 'complete', summary: 'Why now: EU AI Act Aug 2026, NIST AI RMF adoption.', flags: [] },
+        { id: '08', status: 'complete', summary: 'Team: Jonathan Dambrot (ex-KPMG partner), KPMG Studio spinout.', flags: [] },
+        { id: '09', status: 'in_progress', summary: 'Strategy: KPMG and Microsoft EU AI Hub partnerships.', flags: [] },
+        { id: '10', status: 'in_progress', summary: 'Traction: life sciences pilot ($1.3M savings), financial institution pilot.', flags: [] },
+      ],
+      completed: false,
+    },
+
+    // ── Scoring ──────────────────────────────────────────────
+    scoring: {
+      corporate: {
+        dimensions: [
+          { id: 'market', name: 'Market Opportunity', score: 9, explanation: 'AI security market $3.5B growing to $25.6B. EU AI Act and NIST create regulatory tailwind.', whyItMatters: 'Regulatory drivers create urgent buyer demand.' },
+          { id: 'team', name: 'Team Fit', score: 9, explanation: 'Jonathan Dambrot ex-KPMG partner; KPMG Studio spinout with advisory client access.', whyItMatters: 'Deep domain and distribution advantage.' },
+          { id: 'defensibility', name: 'Defensibility', score: 8, explanation: 'Agent-based scanning and compliance automation create switching costs.', whyItMatters: 'Platform breadth increases stickiness.' },
+        ],
+        average: 8.7,
+        recommendation: 'Exceptional corporate innovation fit. KPMG Studio spinout with regulatory tailwind.',
+      },
+      vc: {
+        dimensions: [
+          { id: 'market', name: 'Market Size', score: 9, explanation: 'TAM $3.5B, 22% CAGR. GenAI cybersecurity $8.65B growing to $35.5B.', whyItMatters: 'Venture-scale market with regulatory catalyst.' },
+          { id: 'traction', name: 'Traction', score: 8, explanation: 'Life sciences pilot: 70K repos scanned, $1.3M savings, 14K+ hours saved/year.', whyItMatters: 'Quantified ROI validates enterprise willingness to pay.' },
+          { id: 'scalability', name: 'Scalability', score: 8, explanation: 'SaaS model; scanning and compliance scale with automation.', whyItMatters: 'Efficient scaling supports attractive unit economics.' },
+        ],
+        average: 8.3,
+        recommendation: 'Strong VC profile. Regulatory catalyst and proven pilot traction.',
+      },
+      studio: {
+        dimensions: [
+          { id: 'buildability', name: 'Buildability', score: 8, explanation: 'Platform already built; CodeSensor, Arena, ComplianceAgent operational.', whyItMatters: 'Technical risk largely de-risked.' },
+          { id: 'validation', name: 'Validation Path', score: 9, explanation: 'Pilots with life sciences and financial services validate enterprise fit.', whyItMatters: 'Regulated verticals are repeatable.' },
+          { id: 'economics', name: 'Unit Economics', score: 8, explanation: 'Enterprise ACV $100-500K; high gross margins on SaaS.', whyItMatters: 'Healthy unit economics support growth.' },
+        ],
+        average: 8.3,
+        recommendation: 'Strong studio candidate. KPMG distribution and regulatory tailwind.',
+      },
+      compositeSignal: 'Advance',
+    },
+
+    // ── ICP ──────────────────────────────────────────────────
+    icpDocument: {
+      industry: 'Financial services, life sciences, healthcare, highly regulated enterprises',
+      industrySegments: [
+        { segment: 'Global financial institutions', rationale: '42% of AI security market; EU AI Act and third-party AI risk are acute.' },
+        { segment: 'Life sciences and pharma', rationale: 'Regulated data; AI in drug discovery and clinical trials; compliance burden.' },
+        { segment: 'Healthcare payers and providers', rationale: 'HIPAA, AI in diagnostics; growing AI adoption with governance gap.' },
+      ],
+      companySize: 'Global 2000 / large enterprise',
+      buyerRole: 'CISO / Chief AI Officer / VP Data Science',
+      decisionMakingUnit: 'Security, AI/ML, Compliance, Third-Party Risk',
+      buyingTrigger: 'EU AI Act deadline (Aug 2026); NIST AI RMF adoption; shadow AI audit finding; third-party vendor AI risk.',
+      buyingCharacteristics: [
+        { characteristic: '70K+ AI/ML repositories or models in environment', importance: 'High' as const },
+        { characteristic: 'Regulated industry (FinServ, Life Sciences, Healthcare)', importance: 'High' as const },
+        { characteristic: 'Recent AI governance or audit finding', importance: 'High' as const },
+        { characteristic: 'Third-party AI vendor risk in supply chain', importance: 'Medium' as const },
+      ],
+      painPoints: [
+        { pain: 'No visibility into shadow AI — which models and tools are in use', severity: 'High' as const, evidence: 'Case study: scanned 70K AI/ML repos; reduced shadow AI 65% in 6 months.' },
+        { pain: 'Manual compliance documentation for EU AI Act and NIST', severity: 'High' as const, evidence: '14,000+ hours saved/year with automation.' },
+        { pain: 'Traditional security tools don\'t detect AI-specific threats', severity: 'High' as const, evidence: 'Data poisoning, model extraction, prompt injection require new tooling.' },
+      ],
+      currentAlternatives: 'Manual audits; point solutions (Protect AI, HiddenLayer); bolt-on features in IBM, Microsoft.',
+      willingnessToPay: 'Enterprise: $100-500K/year based on environment size and compliance scope.',
+      generatedAt: now,
+      source: 'AI_SYNTHESIS',
+    },
+
+    // ── Competitors ──────────────────────────────────────────
+    competitorAnalysis: {
+      competitors: [
+        {
+          id: crypto.randomUUID(),
+          name: 'Protect AI',
+          category: 'Direct',
+          description: 'AI/ML pipeline security. Focus on MLOps and model supply chain.',
+          valueProposition: 'Secure AI development and deployment pipelines.',
+          targetIcp: 'ML teams, data science orgs.',
+          pricingModel: 'Enterprise SaaS.',
+          fundingScale: 'Well funded.',
+          keyStrengths: 'MLOps depth, pipeline visibility.',
+          keyWeaknesses: 'Less focus on compliance automation and red teaming.',
+          threatLevel: 'Medium',
+          threatRationale: 'Overlapping ICP in regulated enterprises.',
+          ourDifferentiation: 'Full governance and compliance automation; EU AI Act, NIST; Cranium Arena red teaming.',
+          status: 'accepted',
+          source: 'AI_RESEARCH',
+        },
+        {
+          id: crypto.randomUUID(),
+          name: 'HiddenLayer',
+          category: 'Direct',
+          description: 'AI model security and adversarial defense.',
+          targetIcp: 'Enterprises with production AI.',
+          pricingModel: 'Enterprise licensing.',
+          fundingScale: 'Series B.',
+          keyStrengths: 'Model-level security, adversarial testing.',
+          keyWeaknesses: 'Narrower scope; no compliance automation.',
+          threatLevel: 'Medium',
+          threatRationale: 'Competing for same security budget.',
+          ourDifferentiation: 'Broader platform: discovery, inventory, compliance, red teaming. KPMG distribution.',
+          status: 'accepted',
+          source: 'COMPETITOR',
+        },
+        {
+          id: crypto.randomUUID(),
+          name: 'CalypsoAI',
+          category: 'Direct',
+          description: 'AI security and governance platform.',
+          targetIcp: 'Enterprise, government.',
+          pricingModel: 'Enterprise SaaS.',
+          fundingScale: 'Venture backed.',
+          keyStrengths: 'Government contracts, governance focus.',
+          keyWeaknesses: 'Less automation; slower product velocity.',
+          threatLevel: 'Low',
+          threatRationale: 'Different GTM motion.',
+          ourDifferentiation: 'Agent-based automation; ComplianceAgent; EU AI Hub with KPMG and Microsoft.',
+          status: 'accepted',
+          source: 'FOUNDER',
+        },
+      ],
+      landscapeSummary: 'AI security market is fragmented. Point solutions (Protect AI, HiddenLayer) focus on pipeline or model security. Cranium offers full-stack: discovery, inventory, red teaming, compliance automation. KPMG Studio spinout and EU AI Hub partnership differentiate on distribution and regulatory expertise.',
+      generatedAt: now,
+    },
+
+    // ── Pressure Tests ───────────────────────────────────────
+    pressureTests: [
+      {
+        personaId: 'skeptical_vc',
+        personaName: 'The Skeptical VC',
+        messages: [
+          { role: 'user', content: 'Why won\'t Microsoft and IBM just add AI governance to their existing security stacks?', timestamp: now },
+          { role: 'assistant', content: 'They are adding features, but AI governance requires specialized tooling — agent-based scanning, MITRE ATLAS/OWASP threat intelligence, compliance framework mapping. Our ComplianceAgent and AI Cards automate what would take thousands of manual hours. We\'re also co-founding the EU AI Hub with KPMG and Microsoft — we\'re building the ecosystem, not just a feature.', timestamp: now },
+        ],
+        startedAt: now,
+      },
+      {
+        personaId: 'ciso',
+        personaName: 'The CISO',
+        messages: [
+          { role: 'user', content: 'How do you handle environments with 70,000+ AI/ML repositories?', timestamp: now },
+          { role: 'assistant', content: 'CodeSensor and CloudSensor scale to that level. A global life sciences customer scanned 70K repos and achieved 65% reduction in shadow AI within 6 months. We save 14,000+ hours per year in manual compliance work. The key is automated discovery and inventory — you can\'t govern what you can\'t see.', timestamp: now },
+        ],
+        startedAt: now,
+      },
+    ],
+
+    // ── Saved Insights ───────────────────────────────────────
+    savedInsights: [
+      {
+        id: crypto.randomUUID(),
+        personaId: 'skeptical_vc',
+        personaName: 'The Skeptical VC',
+        content: 'The EU AI Act deadline (Aug 2026) is a real catalyst — regulated enterprises are scrambling. Cranium\'s compliance automation is the wedge.',
+        savedAt: now,
+      },
+      {
+        id: crypto.randomUUID(),
+        personaId: 'ciso',
+        personaName: 'The CISO',
+        content: 'Shadow AI is the #1 concern. Enterprises literally don\'t know how many AI systems they have. Discovery and inventory must come first.',
+        founderResponse: 'Detect AI and CodeSensor are our lead modules for exactly that reason.',
+        savedAt: now,
+      },
+    ],
+
+    // ── Discover Research ───────────────────────────────────
+    discover: {
+      research: [
+        {
+          id: crypto.randomUUID(),
+          type: 'vc_thesis',
+          query: 'VC investment thesis for AI security and governance',
+          content: 'AI security and governance is attracting significant venture investment driven by (1) EU AI Act compliance deadline August 2026, (2) NIST AI RMF adoption, (3) shadow AI proliferation, (4) third-party AI vendor risk. Key themes: discovery and inventory as foundation, automated compliance, adversarial testing. Market: $3.5B (2025) growing to $25.6B by 2035 at 22% CAGR. Notable deals: Cranium $25M Series A (Telstra), Protect AI, HiddenLayer, Robust Intelligence (Cisco).',
+          citations: [
+            { title: 'EU AI Act Overview', url: 'https://ec.europa.eu/digital-strategy/ai-act' },
+            { title: 'AI Security Market Forecast 2025-2035', url: 'https://example.com/ai-security-market' },
+          ],
+          source: 'AI_RESEARCH',
+          generatedAt: now,
+        },
+        {
+          id: crypto.randomUUID(),
+          type: 'market_signal',
+          query: 'Market signals for AI governance in regulated enterprises',
+          content: 'Converging signals: EU AI Act enforcement August 2026; NIST AI RMF adoption by US agencies; OWASP LLM Top 10 and MITRE ATLAS frameworks; financial services 42% of AI security market; life sciences case study (70K repos, $1.3M savings). Shadow AI reduced 65% in 6 months at pilot customer. 14,000+ hours saved/year in compliance automation.',
+          citations: [
+            { title: 'NIST AI Risk Management Framework', url: 'https://www.nist.gov/itl/ai-risk-management-framework' },
+            { title: 'MITRE ATLAS Adversarial Threat Landscape', url: 'https://atlas.mitre.org' },
+          ],
+          source: 'AI_RESEARCH',
+          generatedAt: now,
+        },
+      ],
+    },
+
+    // ── Citations ────────────────────────────────────────────
+    citations: [
+      {
+        id: crypto.randomUUID(),
+        source: 'AI_RESEARCH',
+        title: 'Cranium AI Series A - Telstra Ventures',
+        url: 'https://cranium.ai',
+        excerpt: 'Cranium raises $25M Series A led by Telstra Ventures for AI security platform.',
+        context: 'Funding and traction validation',
+        dimensionId: '08',
+        generatedAt: now,
+      },
+      {
+        id: crypto.randomUUID(),
+        source: 'CLIENT_INTERVIEW',
+        title: 'Life sciences pilot case study',
+        excerpt: 'Scanned 70,000 AI/ML repositories; $1.3M annual savings; 14,000+ hours saved/year.',
+        context: 'Pilot ROI validation',
+        dimensionId: '10',
+        generatedAt: now,
+      },
+    ],
+
+    // ── Business Brief ───────────────────────────────────────
+    businessBrief: {
+      content: {
+        opportunityOverview: 'Cranium AI is an AI security, governance, and compliance platform spun out of KPMG Studio (April 2023). Founded by Jonathan Dambrot. $32M total funding ($7M seed SYN Ventures, $25M Series A Telstra Ventures). Platform: Detect AI, CodeSensor, CloudSensor, AgentSensor, Cranium Arena (red teaming), ComplianceAgent, AI Cards. Co-founded EU AI Hub with KPMG and Microsoft.',
+        problemAndPainPoints: 'Enterprises have zero visibility into their AI ecosystems. Shadow AI proliferates. Traditional security tools don\'t detect AI-specific threats (data poisoning, model extraction, prompt injection). EU AI Act (Aug 2026) and NIST AI RMF create compliance burden. Manual processes can\'t scale — 14,000+ hours saved/year with automation.',
+        idealCustomerProfile: 'CISO, Chief AI Officer at Global 2000 in financial services, life sciences, healthcare. Buying trigger: EU AI Act deadline, audit finding, third-party AI risk.',
+        solutionOverview: 'Discovery (Detect AI, CodeSensor, CloudSensor, AgentSensor), testing (Cranium Arena with MITRE ATLAS, OWASP), remediation (Arena Shield), compliance (ComplianceAgent, AI Cards). AI Trust Hubs for industry governance.',
+        marketAnalysis: 'AI security $3.5B (2025) to $25.6B (2035) at 22% CAGR. Financial services 42% of market. GenAI cybersecurity $8.65B to $35.5B. Regulatory catalyst with EU AI Act.',
+        recommendations: 'Strong advance. KPMG distribution, regulatory tailwind, proven pilot ROI. Expand Connect Reseller Program and EU AI Hub partnerships.',
+      },
+      citationIds: [],
+      generatedAt: now,
+      version: 1,
+    },
+
+    // ── Financial Models ─────────────────────────────────────
+    financialModels: {
+      mvpCost: {
+        mvpFeatures: [
+          { feature: 'Detect AI', description: 'Scans internal environments to reveal shadow AI.' },
+          { feature: 'CodeSensor', description: 'Scans source code for models, datasets, AI packages.' },
+          { feature: 'Cranium Arena', description: 'Automated red teaming with MITRE ATLAS, OWASP.' },
+          { feature: 'ComplianceAgent', description: 'Agentic AI for compliance framework completion.' },
+          { feature: 'AI Cards', description: 'Auto-generated transparency reports.' },
+        ],
+        scenarios: { conservative: 5000000, base: 3500000, aggressive: 2500000 },
+        lineItems: [
+          { category: 'Engineering (15 engineers, 12 months)', conservative: 3500000, base: 2500000, aggressive: 1800000 },
+          { category: 'Security & compliance (SOC 2)', conservative: 500000, base: 350000, aggressive: 250000 },
+          { category: 'Cloud infrastructure', conservative: 400000, base: 300000, aggressive: 200000 },
+          { category: 'Contingency', conservative: 600000, base: 350000, aggressive: 250000 },
+        ],
+        assumptions: [
+          { id: 'eng-cost', label: 'Senior engineer cost', value: 220000, source: 'AI_RESEARCH', confidence: 'Medium' as const, updatedAt: now },
+          { id: 'timeline', label: 'Platform build timeline', value: '12 months', source: 'FOUNDER', confidence: 'High' as const, updatedAt: now },
+        ],
+        generatedAt: now,
+      },
+      unitEconomics: {
+        inputs: {
+          acv: { value: 250000 },
+          cac: { value: 75000 },
+          grossMargin: { value: 0.85 },
+          monthlyChurn: { value: 0.005 },
+          expansionRate: { value: 0.05 },
+        },
+        outputs: {
+          ltv: 5000000,
+          ltvCac: 66.7,
+          paybackMonths: 4,
+          ruleOf40: 72,
+        },
+        assumptions: [
+          { id: 'acv-source', label: 'Average contract value', value: 250000, source: 'CLIENT_INTERVIEW', confidence: 'High' as const, updatedAt: now },
+          { id: 'cac-source', label: 'CAC', value: 75000, source: 'VL', confidence: 'Medium' as const, updatedAt: now },
+        ],
+        generatedAt: now,
+      },
+      marketSizing: {
+        tam: 3500000000,
+        sam: 800000000,
+        som: 80000000,
+        cagr: 22,
+        methodology: 'Top-down: AI security platforms $3.5B (2025) to $25.6B (2035) at 22% CAGR. SAM: regulated enterprises (FinServ, Life Sciences) ~$800M. SOM: 10% of SAM in 3-5 years.',
+        assumptions: [
+          { id: 'tam-source', label: 'AI security market', value: 3500000000, source: 'AI_RESEARCH', confidence: 'High' as const, updatedAt: now },
+          { id: 'cagr-source', label: 'Market CAGR', value: 22, source: 'AI_RESEARCH', confidence: 'Medium' as const, updatedAt: now },
+        ],
+        generatedAt: now,
+      },
+    },
+
+    // ── Interviews ───────────────────────────────────────────
+    interviews: {
+      uploads: [
+        {
+          id: craniumInterviewId1,
+          transcript: `Interviewer: What was your experience with AI governance before Cranium?\n\nCISO, Global Life Sciences Co: We had no idea how many AI systems we had. Data science teams were spinning up models, using external APIs, embedding AI in products — and we had zero inventory. When the board asked "how many AI systems do we have?" we couldn't answer. Manual audits would have taken years.\n\nInterviewer: What did Cranium deliver?\n\nCISO: CodeSensor scanned 70,000 repositories. We discovered AI/ML usage we didn't know existed. We reduced shadow AI by 65% in 6 months. The compliance automation — ComplianceAgent and AI Cards — saved us 14,000 hours per year. That's $1.3M in labor. The ROI was clear within the first quarter.\n\nInterviewer: What would you tell a peer?\n\nCISO: If you're in a regulated industry and you don't have an AI inventory, you're flying blind. Cranium gave us visibility and then automation. The EU AI Act deadline is real — start now.`,
+          intervieweeRole: 'Client',
+          intervieweeCompany: 'Global Life Sciences Co (anonymized)',
+          interviewDate: now,
+          conductedBy: 'Venture Lead',
+          interviewType: 'Customer validation',
+          uploadedBy: 'VL',
+          uploadedAt: now,
+        },
+        {
+          id: craniumInterviewId2,
+          transcript: `Interviewer: What made Telstra Ventures lead the Series A?\n\nPartner, Telstra Ventures: Three things. First, the regulatory catalyst. EU AI Act is a hard deadline. Enterprises can't wait. Second, the KPMG relationship — distribution into advisory clients is a massive advantage. Third, the platform breadth. Discovery, red teaming, compliance — it's a full-stack play, not a point solution.\n\nInterviewer: How do you think about the competitive landscape?\n\nPartner: Protect AI and HiddenLayer are strong in their niches. Cranium's differentiator is compliance automation and the KPMG/Microsoft EU AI Hub. The market is big enough for multiple winners. Cranium has a clear path to $100M ARR in regulated enterprises.`,
+          intervieweeRole: 'VC',
+          intervieweeCompany: 'Telstra Ventures',
+          interviewDate: now,
+          conductedBy: 'Venture Lead',
+          interviewType: 'Investor perspective',
+          uploadedBy: 'VL',
+          uploadedAt: now,
+        },
+      ],
+      extractions: {
+        [craniumInterviewId1]: {
+          uploadId: craniumInterviewId1,
+          painPoints: [
+            { quote: 'We had no idea how many AI systems we had.', paraphrase: 'Zero visibility into AI inventory.', validated: true },
+            { quote: 'Manual audits would have taken years.', paraphrase: 'Manual compliance doesn\'t scale.', validated: true },
+          ],
+          workarounds: ['Ad-hoc audits', 'Spreadsheet tracking'],
+          willingnessToPay: ['$1.3M annual savings validates high ACV'],
+          icpMatch: 'Strong — CISO at regulated life sciences, Global 2000.',
+          featureRequests: ['Broader AgentSensor coverage', 'Industry-specific compliance templates'],
+          objections: ['Integration complexity with legacy security stack'],
+          keyQuotes: ['Reduced shadow AI by 65% in 6 months.', '14,000 hours saved per year.', 'ROI was clear within the first quarter.'],
+          signalQuality: 'Strong',
+          generatedAt: now,
+        },
+        [craniumInterviewId2]: {
+          uploadId: craniumInterviewId2,
+          painPoints: [],
+          workarounds: [],
+          willingnessToPay: ['$25M Series A validates market'],
+          icpMatch: 'N/A — investor perspective.',
+          featureRequests: [],
+          objections: ['Competition from point solutions'],
+          keyQuotes: ['EU AI Act is a hard deadline.', 'KPMG distribution is a massive advantage.', 'Clear path to $100M ARR.'],
+          signalQuality: 'Strong',
+          generatedAt: now,
+        },
+      },
+      synthesis: {
+        themes: [
+          { theme: 'Regulatory catalyst (EU AI Act)', count: 2 },
+          { theme: 'Discovery and inventory as foundation', count: 2 },
+          { theme: 'KPMG distribution advantage', count: 2 },
+          { theme: 'Quantified ROI (14K hours, $1.3M savings)', count: 1 },
+        ],
+        contradictions: [],
+        topQuotes: [
+          'Reduced shadow AI by 65% in 6 months.',
+          '14,000 hours saved per year.',
+          'EU AI Act is a hard deadline.',
+        ],
+        signalQuality: 'Strong',
+        generatedAt: now,
+      },
+    },
+
+    // ── Strategy & Moat ──────────────────────────────────────
+    strategyMoat: {
+      assessment: {
+        recommendedMoats: [
+          {
+            type: 'Data Network Effect',
+            rationale: 'As more enterprises use Cranium, anonymized compliance benchmarks and threat intelligence improve. AI Cards and compliance scoring get better with scale.',
+            examples: ['CrowdStrike threat intelligence', 'Vanta compliance benchmarks'],
+          },
+          {
+            type: 'Ecosystem Lock-in',
+            rationale: 'Integration with code repos, cloud environments, and security tools creates switching costs. Once scanning and compliance workflows are built, migration is painful.',
+            examples: ['Splunk SIEM ecosystem', 'ServiceNow GRC'],
+          },
+        ],
+        currentClaims: [
+          { moatType: 'KPMG Distribution', claim: 'Advisory client access and EU AI Hub', supported: true },
+          { moatType: 'Platform Breadth', claim: 'Discovery + red teaming + compliance', supported: true },
+        ],
+        narrative: 'KPMG distribution and EU AI Hub partnership provide distribution moat. Platform breadth (discovery, testing, compliance) creates switching costs. Data network effect is aspirational.',
+        generatedAt: now,
+      },
+      founderNotes: 'EU AI Hub with KPMG and Microsoft is our key differentiator. Connect Reseller Program expands distribution.',
+    },
+
+    // ── Solution Definition ──────────────────────────────────
+    solutionDefinition: {
+      whatItDoes: 'Cranium discovers, inventories, tests, remediates, and verifies AI systems. Detect AI reveals shadow AI. CodeSensor scans source code. CloudSensor and AgentSensor cover cloud and agent environments. Cranium Arena performs automated red teaming. ComplianceAgent automates EU AI Act and NIST compliance. AI Cards generate transparency reports.',
+      differentiation: 'Full-stack AI governance — discovery through compliance — in one platform. Agent-based automation scales to 70K+ repos. KPMG Studio spinout with advisory distribution. Co-founded EU AI Hub with KPMG and Microsoft.',
+      whatItDoesNot: 'Not a general-purpose security platform. Not focused on traditional endpoint or network security. Does not replace SIEM or SOAR.',
+      tenXClaim: '10x faster AI inventory (automated vs manual); 14,000+ hours saved/year in compliance; 65% shadow AI reduction in 6 months.',
+      evidence: [
+        'Life sciences: 70K repos scanned, $1.3M savings, 14K hours/year.',
+        'Financial institution: exposed critical AI vulnerabilities in vendor ecosystem.',
+        'KPMG and Microsoft EU AI Hub partnership.',
+      ],
+      generatedAt: now,
+    },
+
+    // ── Risk Register ────────────────────────────────────────
+    riskRegister: {
+      risks: [
+        {
+          id: crypto.randomUUID(),
+          category: 'market',
+          description: 'Microsoft, IBM add AI governance to existing security stacks, commoditizing discovery.',
+          likelihood: 'Medium',
+          impact: 'Medium',
+          mitigation: 'Differentiate on compliance automation and EU AI Hub. Move upmarket to complex compliance.',
+          residualRisk: 'Low — full-stack platform has switching costs.',
+          source: 'AI_SYNTHESIS',
+        },
+        {
+          id: crypto.randomUUID(),
+          category: 'execution',
+          description: 'Scaling enterprise sales while maintaining implementation quality.',
+          likelihood: 'Medium',
+          impact: 'Medium',
+          mitigation: 'Connect Reseller Program; partner-led implementation. Focus on KPMG advisory pipeline.',
+          residualRisk: 'Low',
+          source: 'VL',
+        },
+      ],
+      generatedAt: now,
+    },
+
+    // ── Client List ──────────────────────────────────────────
+    clientList: {
+      entries: [
+        {
+          id: crypto.randomUUID(),
+          companyName: 'Global Life Sciences Co (anonymized)',
+          industry: 'Life Sciences',
+          companySize: '50,000+ employees',
+          rationale: 'Pilot customer. 70K AI/ML repos scanned. $1.3M savings. 14K hours/year saved.',
+          contactRole: 'CISO',
+          status: 'qualified',
+          source: 'CLIENT_INTERVIEW',
+          generatedAt: now,
+        },
+        {
+          id: crypto.randomUUID(),
+          companyName: 'Leading Global Financial Institution (anonymized)',
+          industry: 'Financial Services',
+          companySize: '100,000+ employees',
+          rationale: 'Exposed critical AI vulnerabilities in third-party vendor ecosystem.',
+          contactRole: 'Chief AI Officer',
+          status: 'qualified',
+          source: 'AI_RESEARCH',
+          generatedAt: now,
+        },
+        {
+          id: crypto.randomUUID(),
+          companyName: 'Tier 1 European Bank',
+          industry: 'Banking',
+          companySize: '80,000 employees',
+          rationale: 'EU AI Act compliance; undocumented models uncovered. DORA alignment.',
+          contactRole: 'VP Data Science',
+          status: 'contacted',
+          source: 'VL',
+          generatedAt: now,
+        },
+      ],
+      generatedAt: now,
+    },
+
+    // ── Investment Memo ──────────────────────────────────────
+    investmentMemo: {
+      content: {
+        executiveSummary: 'Cranium AI is an AI security and governance platform spun out of KPMG Studio. $32M raised. Life sciences pilot: 70K repos, $1.3M savings. EU AI Act and NIST create regulatory tailwind. Co-founded EU AI Hub with KPMG and Microsoft.',
+        theProblem: 'Enterprises have zero visibility into AI ecosystems. Shadow AI proliferates. Manual compliance doesn\'t scale. EU AI Act deadline Aug 2026.',
+        theSolution: 'Discover (Detect AI, CodeSensor), test (Cranium Arena), comply (ComplianceAgent, AI Cards). 14K hours saved/year. 65% shadow AI reduction.',
+        marketOpportunity: '$3.5B TAM, 22% CAGR to $25.6B. FinServ 42% of market.',
+        competitiveLandscape: 'Protect AI, HiddenLayer (point solutions). Cranium: full-stack + KPMG distribution.',
+        businessModel: 'Enterprise SaaS $100-500K ACV. High gross margins.',
+        teamAndExecution: 'Jonathan Dambrot, ex-KPMG. KPMG Studio spinout.',
+        risksAndMitigations: 'Incumbent response — differentiate on compliance and EU AI Hub.',
+        validationEvidence: 'Life sciences $1.3M savings. Financial institution pilot. Telstra Series A.',
+        recommendation: 'Strong Advance. Regulatory catalyst and proven ROI.',
+      },
+      citationIds: [],
+      generatedAt: now,
+      version: 1,
+    },
+
+    // ── Stage 04: Design Partner Pipeline ─────────────────────
+    designPartnerPipeline: {
+      candidates: [
+        {
+          id: 'cranium-dp-1',
+          companyName: 'Global Life Sciences Co',
+          contactName: 'CISO (anonymized)',
+          contactTitle: 'CISO',
+          whyFit: '70K AI/ML repos; acute shadow AI problem. Regulated industry.',
+          pipelineStage: 'signed',
+          qualification: {
+            scores: [
+              { dimension: 'ICP Match', weight: 20, score: 5, explanation: 'CISO at regulated life sciences.' },
+              { dimension: 'Pain Acuteness', weight: 15, score: 5, explanation: 'Zero AI inventory; board pressure.' },
+              { dimension: 'Willingness to Pay', weight: 15, score: 5, explanation: '$1.3M savings validated.' },
+              { dimension: 'Decision Authority', weight: 15, score: 5, explanation: 'CISO has budget authority.' },
+              { dimension: 'Data & Access', weight: 15, score: 5, explanation: '70K repos scanned.' },
+              { dimension: 'Referencability', weight: 5, score: 4, explanation: 'Case study approved.' },
+              { dimension: 'Strategic Fit', weight: 5, score: 5, explanation: 'Life sciences vertical.' },
+              { dimension: 'Engagement Enthusiasm', weight: 10, score: 5, explanation: 'Strong advocate.' },
+            ],
+            total: 98,
+            verdict: 'Strong Candidate',
+            recommendation: 'Ideal design partner. Case study and reference.',
+            generatedAt: now,
+          },
+          source: 'VL',
+          addedAt: now,
+          updatedAt: now,
+        },
+      ],
+      generatedAt: now,
+    },
+
+    // ── Stage 04: Design Partner Feedback Summary ────────────
+    designPartnerFeedbackSummary: {
+      content: {
+        commonThemes: [
+          'Discovery and inventory must come first — can\'t govern what you can\'t see.',
+          'Compliance automation (ComplianceAgent, AI Cards) is the highest ROI.',
+          'Cranium Arena red teaming differentiates from point solutions.',
+        ],
+        divergentFeedback: [
+          'FinServ wants third-party vendor risk; Life Sciences wants internal model inventory.',
+          'Some want industry-specific compliance templates; others want flexibility.',
+        ],
+        strongestUseCases: [
+          'Shadow AI discovery: 70K repos, 65% reduction in 6 months.',
+          'Compliance automation: 14K hours saved/year.',
+          'Third-party AI vendor risk assessment.',
+        ],
+        productGaps: [
+          'AgentSensor expansion for agentic AI governance.',
+          'Industry-specific AI Card templates.',
+          'Integration with more GRC platforms.',
+        ],
+        narrative: 'Design partner feedback validates discovery-first approach and compliance automation as key value. AgentSensor and industry templates are next priorities.',
+      },
+      partnerTags: [{ partnerId: 'cranium-dp-1', companyName: 'Global Life Sciences Co' }],
+      generatedAt: now,
+      version: 1,
+    },
+
+    // ── Stage 04: MVP Feature List ───────────────────────────
+    mvpFeatureList: {
+      features: [
+        { id: 'cranium-detect', name: 'Detect AI', description: 'Scan internal environments for shadow AI.', moscow: 'Must Have' as const, complexity: 'High', source: 'AI_SYNTHESIS', addedAt: now },
+        { id: 'cranium-codesensor', name: 'CodeSensor', description: 'Scan source code for models, datasets, AI packages.', moscow: 'Must Have' as const, complexity: 'High', source: 'AI_SYNTHESIS', addedAt: now },
+        { id: 'cranium-arena', name: 'Cranium Arena', description: 'Automated red teaming with MITRE ATLAS, OWASP.', moscow: 'Must Have' as const, complexity: 'High', source: 'AI_SYNTHESIS', addedAt: now },
+        { id: 'cranium-compliance', name: 'ComplianceAgent', description: 'Agentic AI for compliance framework completion.', moscow: 'Must Have' as const, complexity: 'Medium', source: 'VL', addedAt: now },
+        { id: 'cranium-aicards', name: 'AI Cards', description: 'Auto-generated transparency reports.', moscow: 'Must Have' as const, complexity: 'Medium', source: 'AI_SYNTHESIS', addedAt: now },
+        { id: 'cranium-agentsensor', name: 'AgentSensor', description: 'Detect AI agents and tool invocations.', moscow: 'Should Have' as const, complexity: 'High', source: 'AI_SYNTHESIS', addedAt: now },
+      ],
+      generatedAt: now,
+    },
+
+    // ── Stage 05: MVP Readiness ───────────────────────────────
+    technicalArchitecture: {
+      content: {
+        techStack: 'Agent-based scanning (CodeSensor, CloudSensor, AgentSensor); Python/Go services; PostgreSQL for inventory; Redis for caching; AWS/GCP for deployment.',
+        componentDiagram: 'Detect AI -> CodeSensor, CloudSensor, AgentSensor -> Inventory DB; Cranium Arena -> MITRE ATLAS/OWASP threat feeds; ComplianceAgent -> EU AI Act, NIST mappings.',
+        integrationPoints: 'GitHub, GitLab, AWS, Azure, GCP; SIEM (Splunk); GRC (ServiceNow, Archer).',
+        keyDecisions: 'Agent-based architecture for scale; ComplianceAgent as agentic AI; AI Cards as standardized output.',
+        risksAndOpenQuestions: 'AgentSensor coverage for new agent frameworks; multi-tenant isolation.',
+      },
+      generatedAt: now,
+      source: 'AI_SYNTHESIS',
+    },
+    productRoadmap: {
+      phases: [
+        { phase: 'MVP', milestones: ['Detect AI GA', 'CodeSensor GA', 'Cranium Arena GA', 'Life sciences pilot live'], featuresInScope: ['Detect AI', 'CodeSensor', 'Arena', 'ComplianceAgent', 'AI Cards'], successCriteria: ['1 pilot live', '65% shadow AI reduction'], capitalRequirement: 'Series A runway' },
+        { phase: 'V1 Commercial', milestones: ['AgentSensor GA', '50 enterprise customers', 'EU AI Hub launch'], featuresInScope: ['AgentSensor', 'CloudSensor', 'AI Trust Hubs'], successCriteria: ['$10M ARR', 'Connect Reseller Program live'], capitalRequirement: 'Growth capital' },
+        { phase: 'V2 Scale', milestones: ['200+ customers', '$50M ARR'], featuresInScope: ['Industry templates', 'Advanced red teaming'], successCriteria: ['$50M ARR', '2 new verticals'], capitalRequirement: 'Series B or profitability' },
+      ],
+      generatedAt: now,
+      source: 'AI_SYNTHESIS',
+    },
+    featurePrdList: {
+      prds: [
+        { id: 'cranium-prd-1', featureId: 'cranium-detect', name: 'Detect AI', userStory: 'As a CISO, I want to discover all AI systems in my environment so I can govern them.', acceptanceCriteria: ['Scans code repos, cloud, agents', 'Generates AI inventory'], inScope: ['Discovery', 'Inventory'], outOfScope: ['Remediation'], dependencies: [], generatedAt: now, source: 'AI_SYNTHESIS' },
+        { id: 'cranium-prd-2', featureId: 'cranium-arena', name: 'Cranium Arena', userStory: 'As a CISO, I want to test my AI systems against known attacks so I can remediate vulnerabilities.', acceptanceCriteria: ['MITRE ATLAS integration', 'OWASP LLM Top 10', 'Automated attack simulation'], inScope: ['Red teaming', 'Threat intel'], outOfScope: ['Custom attack development'], dependencies: ['Detect AI'], generatedAt: now, source: 'AI_SYNTHESIS' },
+      ],
+      generatedAt: now,
+    },
+    sprintPlan: {
+      sprints: [
+        { sprintNumber: 1, durationWeeks: 2, featuresInScope: ['CodeSensor – repo scanning'], definitionOfDone: 'Scans GitHub/GitLab', acceptanceCriteria: ['Repo discovery', 'AI package detection'] },
+        { sprintNumber: 2, durationWeeks: 2, featuresInScope: ['ComplianceAgent – EU AI Act mapping'], definitionOfDone: 'Framework ingestion', acceptanceCriteria: ['EU AI Act articles mapped', 'Gap analysis output'] },
+        { sprintNumber: 3, durationWeeks: 2, featuresInScope: ['Cranium Arena – MITRE ATLAS integration'], definitionOfDone: 'Attack simulation runs', acceptanceCriteria: ['Threat feed integration', 'Simulation report'] },
+      ],
+      assumptions: [
+        { label: 'Team size', value: '8 engineers', source: 'VL' as const },
+        { label: 'Velocity', value: '6 story points/sprint', source: 'AI_SYNTHESIS' as const },
+      ],
+      generatedAt: now,
+      source: 'AI_SYNTHESIS',
+    },
+
+    // ── Stage 06: Build & Pilot ────────────────────────────────
+    clientFeedbackSummary: {
+      content: {
+        themes: ['Discovery and inventory resonate; compliance automation is highest ROI', 'Red teaming differentiates from point solutions', 'EU AI Act deadline creates urgency'],
+        divergence: ['FinServ vs Life Sciences prioritization differs'],
+        topSignals: ['$1.3M savings validated', '65% shadow AI reduction', '14K hours saved/year'],
+        productGaps: ['AgentSensor expansion', 'Industry templates'],
+        narrative: 'Pilot feedback validates full-stack approach. Compliance automation and discovery are key. AgentSensor is next priority.',
+      },
+      clientTags: [{ clientId: 'cranium-c1', companyName: 'Global Life Sciences Co' }],
+      generatedAt: now,
+      source: 'CLIENT_INTERVIEW',
+    },
+    updatedRoadmap: {
+      phases: [
+        { phase: 'MVP', milestones: ['Detect AI GA', 'CodeSensor GA', 'Arena GA'], featuresInScope: ['Detect AI', 'CodeSensor', 'Arena', 'ComplianceAgent'], successCriteria: ['Pilot live'] },
+        { phase: 'V1 Commercial', milestones: ['AgentSensor GA', '50 customers'], featuresInScope: ['AgentSensor', 'AI Trust Hubs'], successCriteria: ['$10M ARR'] },
+      ],
+      generatedAt: now,
+      source: 'AI_SYNTHESIS',
+    },
+    pricingLab: {
+      assumptions: [
+        { id: 'cranium-pla-1', label: 'Target ACV (enterprise)', value: 250000, source: 'VL' as const, confidence: 'High', updatedAt: now },
+        { id: 'cranium-pla-2', label: 'Willingness to pay (from pilot)', value: '$100K–$500K/year', source: 'CLIENT_INTERVIEW' as const, confidence: 'High', updatedAt: now },
+        { id: 'cranium-pla-3', label: 'Competitive benchmark', value: '$150K–$400K for similar scope', source: 'AI_RESEARCH' as const, confidence: 'Medium', updatedAt: now },
+      ],
+      recommendation: {
+        tierStructure: 'Starter (single environment), Growth (multi-environment), Enterprise (unlimited, custom SLA).',
+        pricePoints: 'Starter: $120K/year; Growth: $250K/year; Enterprise: custom $400K+.',
+        discountingPolicy: '15% annual prepay. Pilot discount 20% first year.',
+        rationale: 'Pilot ROI ($1.3M savings) supports $100-500K ACV. Enterprise tier for Global 2000.',
+        generatedAt: now,
+        source: 'AI_SYNTHESIS',
+      },
+      versionHistory: [],
+    },
+
+    // ── Stage 07: Commercial ──────────────────────────────────
+    pricingImplementationTracker: {
+      pricingLabSnapshot: {
+        tierStructure: 'Starter, Growth, Enterprise',
+        pricePoints: 'Starter $120K/yr; Growth $250K/yr; Enterprise custom $400K+',
+        discountingPolicy: '15% annual; 20% pilot year one',
+        rationale: 'Aligned with pilot WTP.',
+        generatedAt: now,
+        source: 'AI_SYNTHESIS',
+      },
+      rolloutStatus: 'Pilot pricing live with life sciences customer. Enterprise tier in negotiation with 2 financial institutions.',
+      milestones: ['Life sciences pilot signed', 'First financial institution LOI', 'EU AI Hub launch', 'Connect Reseller Program live'],
+      generatedAt: now,
+      source: 'VL',
+    },
+    gtmTracker: {
+      gtmPlan: '10: Land 10 enterprise pilots (FinServ, Life Sciences). 50: Scale via KPMG advisory and Connect Reseller Program. 100: EU AI Hub expansion; 2 new verticals.',
+      pricingImplementationPlan: 'Pilot discount 20% first year. Enterprise custom terms. Reseller margin 20%.',
+      signedSowTracker: [
+        { company: 'Global Life Sciences Co', status: 'Signed' },
+        { company: 'Leading Financial Institution', status: 'LOI' },
+      ],
+      generatedAt: now,
+      source: 'VL',
+    },
+
+    // ── Business Planning ─────────────────────────────────────
+    ventureSuccessCriteria: [
+      '$50M ARR within 4 years',
+      '100+ enterprise customers',
+      'EU AI Hub operational in 3 regions',
+      'Connect Reseller Program: 5+ partners',
+    ],
+    revenueModel: 'Enterprise SaaS subscription. Priced by environment size (repos, cloud accounts) and compliance scope. Starter $120K/year; Growth $250K; Enterprise custom $400K+. Expansion via additional environments and compliance frameworks.',
+    businessKpis: [
+      'ARR target: $5M',
+      'Enterprise customers: 15+',
+      'Pilot NPS > 50',
+      'Shadow AI reduction: 50%+ at pilot customers',
+    ],
+
+    // ── Team Members ─────────────────────────────────────────
+    teamMembers: [
+      { id: crypto.randomUUID(), name: 'Jonathan Dambrot', role: 'CEO', allocationPct: 100, addedAt: now, updatedAt: now },
+      { id: crypto.randomUUID(), name: 'CTO (anonymized)', role: 'CTO', allocationPct: 100, addedAt: now, updatedAt: now },
+    ],
   }
 }

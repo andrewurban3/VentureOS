@@ -10,7 +10,7 @@ CREATE EXTENSION IF NOT EXISTS vector;
 -- Each meaningful piece of venture data becomes a node with
 -- a Voyage AI embedding for semantic search.
 -- ============================================================
-CREATE TABLE knowledge_nodes (
+CREATE TABLE IF NOT EXISTS knowledge_nodes (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   venture_id uuid NOT NULL REFERENCES ventures(id) ON DELETE CASCADE,
   node_type text NOT NULL,
@@ -24,24 +24,24 @@ CREATE TABLE knowledge_nodes (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_kn_venture ON knowledge_nodes(venture_id);
-CREATE INDEX idx_kn_type ON knowledge_nodes(node_type);
-CREATE INDEX idx_kn_source ON knowledge_nodes(source_table, source_id);
-CREATE INDEX idx_kn_venture_type ON knowledge_nodes(venture_id, node_type);
+CREATE INDEX IF NOT EXISTS idx_kn_venture ON knowledge_nodes(venture_id);
+CREATE INDEX IF NOT EXISTS idx_kn_type ON knowledge_nodes(node_type);
+CREATE INDEX IF NOT EXISTS idx_kn_source ON knowledge_nodes(source_table, source_id);
+CREATE INDEX IF NOT EXISTS idx_kn_venture_type ON knowledge_nodes(venture_id, node_type);
 
 -- HNSW index for fast approximate nearest-neighbor search
-CREATE INDEX idx_kn_embedding ON knowledge_nodes
+CREATE INDEX IF NOT EXISTS idx_kn_embedding ON knowledge_nodes
   USING hnsw (embedding vector_cosine_ops)
   WITH (m = 16, ef_construction = 64);
 
 -- Unique constraint to enable upsert by source
-CREATE UNIQUE INDEX idx_kn_source_unique ON knowledge_nodes(venture_id, source_table, source_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_kn_source_unique ON knowledge_nodes(venture_id, source_table, source_id);
 
 -- ============================================================
 -- knowledge_edges
 -- Typed relationships between nodes for graph traversal.
 -- ============================================================
-CREATE TABLE knowledge_edges (
+CREATE TABLE IF NOT EXISTS knowledge_edges (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   source_node_id uuid NOT NULL REFERENCES knowledge_nodes(id) ON DELETE CASCADE,
   target_node_id uuid NOT NULL REFERENCES knowledge_nodes(id) ON DELETE CASCADE,
@@ -51,12 +51,12 @@ CREATE TABLE knowledge_edges (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_ke_source ON knowledge_edges(source_node_id);
-CREATE INDEX idx_ke_target ON knowledge_edges(target_node_id);
-CREATE INDEX idx_ke_type ON knowledge_edges(edge_type);
+CREATE INDEX IF NOT EXISTS idx_ke_source ON knowledge_edges(source_node_id);
+CREATE INDEX IF NOT EXISTS idx_ke_target ON knowledge_edges(target_node_id);
+CREATE INDEX IF NOT EXISTS idx_ke_type ON knowledge_edges(edge_type);
 
 -- Prevent duplicate edges
-CREATE UNIQUE INDEX idx_ke_unique ON knowledge_edges(source_node_id, target_node_id, edge_type);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_ke_unique ON knowledge_edges(source_node_id, target_node_id, edge_type);
 
 -- ============================================================
 -- RLS Policies
@@ -64,11 +64,19 @@ CREATE UNIQUE INDEX idx_ke_unique ON knowledge_edges(source_node_id, target_node
 ALTER TABLE knowledge_nodes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE knowledge_edges ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "allow_all_select_knowledge_nodes" ON knowledge_nodes;
+DROP POLICY IF EXISTS "allow_all_insert_knowledge_nodes" ON knowledge_nodes;
+DROP POLICY IF EXISTS "allow_all_update_knowledge_nodes" ON knowledge_nodes;
+DROP POLICY IF EXISTS "allow_all_delete_knowledge_nodes" ON knowledge_nodes;
 CREATE POLICY "allow_all_select_knowledge_nodes" ON knowledge_nodes FOR SELECT USING (true);
 CREATE POLICY "allow_all_insert_knowledge_nodes" ON knowledge_nodes FOR INSERT WITH CHECK (true);
 CREATE POLICY "allow_all_update_knowledge_nodes" ON knowledge_nodes FOR UPDATE USING (true) WITH CHECK (true);
 CREATE POLICY "allow_all_delete_knowledge_nodes" ON knowledge_nodes FOR DELETE USING (true);
 
+DROP POLICY IF EXISTS "allow_all_select_knowledge_edges" ON knowledge_edges;
+DROP POLICY IF EXISTS "allow_all_insert_knowledge_edges" ON knowledge_edges;
+DROP POLICY IF EXISTS "allow_all_update_knowledge_edges" ON knowledge_edges;
+DROP POLICY IF EXISTS "allow_all_delete_knowledge_edges" ON knowledge_edges;
 CREATE POLICY "allow_all_select_knowledge_edges" ON knowledge_edges FOR SELECT USING (true);
 CREATE POLICY "allow_all_insert_knowledge_edges" ON knowledge_edges FOR INSERT WITH CHECK (true);
 CREATE POLICY "allow_all_update_knowledge_edges" ON knowledge_edges FOR UPDATE USING (true) WITH CHECK (true);

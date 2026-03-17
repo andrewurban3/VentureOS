@@ -1,8 +1,13 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { LineChart, Line, ResponsiveContainer, YAxis } from 'recharts'
 import { useVentures } from '@/context/VentureContext'
+import { useRole } from '@/components/RolePicker'
 import { STAGES } from '@/constants/stages'
 import { STAGE_BASE_PATHS } from '@/constants/stageFeatures'
+import { GateReviewModal } from '@/features/governance/GateReviewModal'
+import type { CompositeSignal } from '@/constants/scoring'
+import type { KpiDefinition, KpiSnapshot } from '@/types/venture'
 import {
   getDesignValidateStatus,
   getMvpReadinessStatus,
@@ -10,7 +15,7 @@ import {
   getCommercialStatus,
 } from '@/components/StageProgressSummary'
 import type { Venture } from '@/types/venture'
-import type { CompositeSignal } from '@/constants/scoring'
+import { ActivityFeed } from './ActivityFeed'
 
 const SIGNAL_COLORS: Record<CompositeSignal, string> = {
   Advance: '#10B981',
@@ -120,6 +125,13 @@ function getLastUpdated(venture: Venture): string | null {
   return valid[valid.length - 1]
 }
 
+function getKpiSparklineData(kpiId: string, snapshots: KpiSnapshot[]): { value: number }[] {
+  return snapshots
+    .filter((s) => s.kpiId === kpiId)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map((s) => ({ value: s.value }))
+}
+
 function formatRelativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
   const mins = Math.floor(diff / 60000)
@@ -138,11 +150,91 @@ const CARD = {
   border: '1px solid var(--border)',
 }
 
+type SortField = 'name' | 'stage' | 'signal' | 'lastUpdated'
+type SortOrder = 'asc' | 'desc'
+
+const SIGNAL_ORDER: Record<CompositeSignal, number> = {
+  Advance: 0,
+  Caution: 1,
+  Revisit: 2,
+  Kill: 3,
+}
+
 export function PortfolioDashboard() {
   const { ventures, setActiveVentureId } = useVentures()
   const navigate = useNavigate()
-  const ventureList = Object.values(ventures)
+  const [role] = useRole()
+  const allVentures = Object.values(ventures)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterStage, setFilterStage] = useState<string>('')
+  const [filterSignal, setFilterSignal] = useState<string>('')
+  const [filterFounder, setFilterFounder] = useState('')
+  const [filterDateFrom, setFilterDateFrom] = useState('')
+  const [filterDateTo, setFilterDateTo] = useState('')
+  const [sortBy, setSortBy] = useState<SortField>('lastUpdated')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
+  const [gateModal, setGateModal] = useState<{ venture: Venture; from: string; to: string } | null>(null)
+
+  const ventureList = useMemo(() => {
+    let list = allVentures
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase()
+      list = list.filter((v) => (v.name?.value ?? '').toLowerCase().includes(q))
+    }
+    if (filterStage) {
+      list = list.filter((v) => (v.stage?.value ?? '02') === filterStage)
+    }
+    if (filterSignal) {
+      list = list.filter((v) => (v.scoring?.compositeSignal ?? '') === filterSignal)
+    }
+    if (filterFounder.trim()) {
+      const q = filterFounder.trim().toLowerCase()
+      list = list.filter((v) => (v.founder?.value ?? '').toLowerCase().includes(q))
+    }
+    if (filterDateFrom || filterDateTo) {
+      list = list.filter((v) => {
+        const ts = getLastUpdated(v)
+        if (!ts) return false
+        const d = new Date(ts).getTime()
+        if (filterDateFrom && d < new Date(filterDateFrom).getTime()) return false
+        if (filterDateTo && d > new Date(filterDateTo + 'T23:59:59').getTime()) return false
+        return true
+      })
+    }
+
+    const sorted = [...list].sort((a, b) => {
+      let cmp = 0
+      if (sortBy === 'name') {
+        cmp = (a.name?.value ?? '').localeCompare(b.name?.value ?? '')
+      } else if (sortBy === 'stage') {
+        const sa = parseInt(a.stage?.value ?? '02', 10)
+        const sb = parseInt(b.stage?.value ?? '02', 10)
+        cmp = sa - sb
+      } else if (sortBy === 'signal') {
+        const sa = a.scoring?.compositeSignal ? SIGNAL_ORDER[a.scoring.compositeSignal] ?? 4 : 4
+        const sb = b.scoring?.compositeSignal ? SIGNAL_ORDER[b.scoring.compositeSignal] ?? 4 : 4
+        cmp = sa - sb
+      } else {
+        const ta = getLastUpdated(a) ?? ''
+        const tb = getLastUpdated(b) ?? ''
+        cmp = ta.localeCompare(tb)
+      }
+      return sortOrder === 'asc' ? cmp : -cmp
+    })
+    return sorted
+  }, [
+    allVentures,
+    searchQuery,
+    filterStage,
+    filterSignal,
+    filterFounder,
+    filterDateFrom,
+    filterDateTo,
+    sortBy,
+    sortOrder,
+  ])
 
   const handleSelect = (v: Venture) => {
     setActiveVentureId(v.id)
@@ -167,16 +259,86 @@ export function PortfolioDashboard() {
     navigate('/incubate/risk')
   }
 
+  const toggleSort = (field: SortField) => {
+    if (sortBy === field) setSortOrder((o) => (o === 'asc' ? 'desc' : 'asc'))
+    else {
+      setSortBy(field)
+      setSortOrder(field === 'name' ? 'asc' : 'desc')
+    }
+  }
+
+  const hasFilters =
+    searchQuery.trim() ||
+    filterStage ||
+    filterSignal ||
+    filterFounder.trim() ||
+    filterDateFrom ||
+    filterDateTo
+
+  const clearFilters = () => {
+    setSearchQuery('')
+    setFilterStage('')
+    setFilterSignal('')
+    setFilterFounder('')
+    setFilterDateFrom('')
+    setFilterDateTo('')
+  }
+
   return (
     <div className="space-y-4">
-      <h2 className="font-heading font-semibold text-lg">Portfolio Dashboard</h2>
-      <p className="text-xs text-[var(--text-muted)] -mt-2">
-        All ventures across the lifecycle. Expand for details, or click Open to go to the venture.
+      <p className="text-xs text-[var(--text-muted)]">
+        All ventures across the lifecycle. Expand for details, or click Open. Gate review: expand a venture → click &quot;Gate: X → Y&quot; to request (Founder) or approve (VL).
       </p>
+
+      <div className="rounded-xl p-4" style={CARD}>
+        <h3 className="font-heading font-semibold text-sm mb-2 text-[var(--text-primary)]">
+          Recent activity
+        </h3>
+        <ActivityFeed limit={10} compact />
+      </div>
+
+      <div className="rounded-xl px-3 py-2 flex flex-wrap items-center gap-2" style={CARD}>
+        <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="px-2 py-1.5 rounded text-sm bg-[rgba(20,16,36,0.6)] border border-[var(--border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] w-28" />
+        <select value={filterStage} onChange={(e) => setFilterStage(e.target.value)} className="px-2 py-1.5 rounded text-sm bg-[rgba(20,16,36,0.6)] border border-[var(--border)] text-[var(--text-primary)]">
+          <option value="">Stage</option>
+          {STAGES.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+        </select>
+        <select value={filterSignal} onChange={(e) => setFilterSignal(e.target.value)} className="px-2 py-1.5 rounded text-sm bg-[rgba(20,16,36,0.6)] border border-[var(--border)] text-[var(--text-primary)]">
+          <option value="">Signal</option>
+          <option value="Advance">Advance</option>
+          <option value="Caution">Caution</option>
+          <option value="Revisit">Revisit</option>
+          <option value="Kill">Kill</option>
+        </select>
+        <input type="text" placeholder="Founder" value={filterFounder} onChange={(e) => setFilterFounder(e.target.value)} className="px-2 py-1.5 rounded text-sm bg-[rgba(20,16,36,0.6)] border border-[var(--border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] w-24" />
+        <input type="date" value={filterDateFrom} onChange={(e) => setFilterDateFrom(e.target.value)} className="px-2 py-1.5 rounded text-sm bg-[rgba(20,16,36,0.6)] border border-[var(--border)] text-[var(--text-primary)]" />
+        <input type="date" value={filterDateTo} onChange={(e) => setFilterDateTo(e.target.value)} className="px-2 py-1.5 rounded text-sm bg-[rgba(20,16,36,0.6)] border border-[var(--border)] text-[var(--text-primary)]" />
+        {hasFilters && <button type="button" onClick={clearFilters} className="px-2 py-1 text-xs text-[var(--accent-secondary)] hover:underline border-none cursor-pointer bg-transparent">Clear</button>}
+        <span className="text-[var(--text-muted)] text-xs ml-auto flex items-center gap-1">
+          Sort:
+          {(['name', 'stage', 'signal', 'lastUpdated'] as const).map((f) => (
+            <button key={f} type="button" onClick={() => toggleSort(f)} className={`px-1.5 py-0.5 rounded text-xs ${sortBy === f ? 'bg-[var(--accent-primary)] text-white' : 'hover:bg-[rgba(124,106,247,0.15)]'}`}>
+              {f === 'lastUpdated' ? 'Updated' : f}
+            </button>
+          ))}
+        </span>
+        <span className="text-[var(--text-muted)] text-xs">{ventureList.length}/{allVentures.length}</span>
+      </div>
 
       {ventureList.length === 0 ? (
         <div className="rounded-xl p-8 text-center" style={CARD}>
-          <p className="text-[var(--text-muted)]">No ventures yet.</p>
+          <p className="text-[var(--text-muted)]">
+            {hasFilters ? 'No ventures match your filters.' : 'No ventures yet.'}
+          </p>
+          {hasFilters && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="mt-3 px-4 py-2 rounded-lg text-sm bg-[var(--accent-primary)] text-white border-none cursor-pointer hover:opacity-90"
+            >
+              Clear filters
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
@@ -285,6 +447,35 @@ export function PortfolioDashboard() {
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div className="pt-4 space-y-4">
+                      {(() => {
+                        const stagesWithout01 = STAGES.filter((s) => s.id !== '01')
+                        const currentIdx = stagesWithout01.findIndex((s) => s.id === (v.stage?.value ?? '02'))
+                        const nextStage = currentIdx >= 0 && currentIdx < stagesWithout01.length - 1 ? stagesWithout01[currentIdx + 1] : null
+                        return nextStage && (role === 'founder' || role === 'venture-lead') ? (
+                          <div>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setActiveVentureId(v.id)
+                                setGateModal({ venture: v, from: v.stage?.value ?? '02', to: nextStage.id })
+                              }}
+                              className="px-3 py-1.5 rounded text-xs font-medium bg-[rgba(124,106,247,0.2)] text-[var(--accent-primary)] border border-[rgba(124,106,247,0.3)] cursor-pointer hover:opacity-90"
+                            >
+                              Gate: {stageName} → {nextStage.name}
+                            </button>
+                            <p className="text-[10px] text-[var(--text-muted)] mt-1">
+                              {role === 'founder' ? 'Request advancement for VL approval' : 'Start or review gate assessment'}
+                            </p>
+                          </div>
+                        ) : null
+                      })()}
+                      <div>
+                        <span className="block text-xs font-medium text-[var(--text-muted)] mb-2">
+                          Activity
+                        </span>
+                        <ActivityFeed ventureId={v.id} limit={5} compact />
+                      </div>
                       {v.founder?.value && (
                         <div>
                           <span className="text-xs font-medium text-[var(--text-muted)]">Founder: </span>
@@ -299,6 +490,57 @@ export function PortfolioDashboard() {
                           </span>
                         </div>
                       )}
+                      {v.kpiTracker?.definitions?.length ? (
+                        <div>
+                          <span className="block text-xs font-medium text-[var(--text-muted)] mb-2">
+                            KPI trends
+                          </span>
+                          <div className="flex flex-wrap gap-4">
+                            {v.kpiTracker.definitions.slice(0, 4).map((def: KpiDefinition) => {
+                              const data = getKpiSparklineData(def.id, v.kpiTracker!.snapshots ?? [])
+                              if (data.length === 0) return null
+                              const latest = data[data.length - 1].value
+                              const offTrack =
+                                (def.direction ?? 'higher') === 'higher'
+                                  ? latest < def.target
+                                  : latest > def.target
+                              return (
+                                <div
+                                  key={def.id}
+                                  className="flex items-center gap-2 rounded-lg px-3 py-2"
+                                  style={{
+                                    background: 'rgba(20,16,36,0.6)',
+                                    border: `1px solid ${offTrack ? 'rgba(239,68,68,0.3)' : 'var(--border)'}`,
+                                  }}
+                                >
+                                  <div className="w-16 h-8">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                      <LineChart data={data}>
+                                        <YAxis hide domain={['auto', 'auto']} />
+                                        <Line
+                                          type="monotone"
+                                          dataKey="value"
+                                          stroke={offTrack ? '#EF4444' : 'var(--accent-secondary)'}
+                                          strokeWidth={1.5}
+                                          dot={false}
+                                        />
+                                      </LineChart>
+                                    </ResponsiveContainer>
+                                  </div>
+                                  <div>
+                                    <span className="text-xs font-medium text-[var(--text-primary)]">
+                                      {def.name}: {def.unit ?? ''}{latest}
+                                    </span>
+                                    {offTrack && (
+                                      <span className="ml-1 text-xs text-[#EF4444]">(off track)</span>
+                                    )}
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      ) : null}
                       {statusItems.length > 0 && (
                         <div>
                           <span className="block text-xs font-medium text-[var(--text-muted)] mb-2">
@@ -386,6 +628,21 @@ export function PortfolioDashboard() {
             )
           })}
         </div>
+      )}
+
+      {gateModal && (
+        <GateReviewModal
+          venture={gateModal.venture}
+          fromStage={gateModal.from}
+          toStage={gateModal.to}
+          onClose={() => setGateModal(null)}
+          onApproved={() => {
+            setGateModal(null)
+            setActiveVentureId(gateModal.venture.id)
+            const basePath = STAGE_BASE_PATHS[gateModal.to] ?? '/define'
+            navigate(basePath)
+          }}
+        />
       )}
     </div>
   )

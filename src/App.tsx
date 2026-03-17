@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom'
 import { VentureProvider } from '@/context/VentureContext'
 import { DiscoverProvider } from '@/context/DiscoverContext'
-import { RolePicker, useRole } from '@/components/RolePicker'
+import { RoleProvider, useRole } from '@/context/RoleContext'
+import { RolePicker } from '@/components/RolePicker'
 import { RequireVenture } from '@/components/RequireVenture'
 import { RequireVentureLead } from '@/components/RequireVentureLead'
 import { VentureContextBar } from '@/components/VentureContextBar'
@@ -46,10 +47,13 @@ import { PricingLab } from '@/features/build/PricingLab'
 import { CommercialLayout } from '@/features/commercial/CommercialLayout'
 import { PricingTracker } from '@/features/commercial/PricingTracker'
 import { GtmTracker } from '@/features/commercial/GtmTracker'
+import { GtmClientList } from '@/features/commercial/GtmClientList'
+import { StageGate } from '@/features/governance/StageGate'
 import { STAGE_BASE_PATHS } from '@/constants/stageFeatures'
 
 function isVentureLeadStagePath(pathname: string): boolean {
   if (pathname.startsWith('/discover')) return false
+  if (pathname.startsWith('/stage-gate')) return true
   return Object.values(STAGE_BASE_PATHS).some((base) => pathname.startsWith(base))
 }
 
@@ -60,14 +64,16 @@ function isFounderFeaturePath(pathname: string): boolean {
     pathname.startsWith('/validate') ||
     pathname.startsWith('/mvp-ready') ||
     pathname.startsWith('/build') ||
-    pathname.startsWith('/commercial')
+    pathname.startsWith('/commercial') ||
+    pathname.startsWith('/stage-gate')
 }
 
 function LayoutContent() {
   const { pathname } = useLocation()
   const [role] = useRole()
 
-  const isLanding = pathname === '/'
+  const isRoleLanding = pathname === '/'
+  const showHeaderNav = true
   const showFounderNav = role === 'founder' && isFounderFeaturePath(pathname)
   const showStageNav = role === 'venture-lead' && isVentureLeadStagePath(pathname)
   const showDiscoverNav = role === 'venture-lead' && pathname.startsWith('/discover')
@@ -75,12 +81,13 @@ function LayoutContent() {
   return (
     <div className="h-screen flex flex-col bg-[var(--bg)]">
       <header
-        className="flex items-center justify-between px-6 shrink-0"
+        className="flex items-center justify-between px-6 shrink-0 relative"
         style={{
           height: 56,
           background: 'rgba(19,17,28,0.95)',
           borderBottom: '1px solid var(--border)',
           backdropFilter: 'blur(12px)',
+          zIndex: 100,
         }}
       >
         <Link
@@ -90,7 +97,7 @@ function LayoutContent() {
         >
           Venture OS
         </Link>
-        {!isLanding && (
+        {showHeaderNav && (
           <div className="flex items-center gap-4">
             <VentureContextBar />
             <Link
@@ -106,7 +113,7 @@ function LayoutContent() {
       {showFounderNav && <FounderNav />}
       {showStageNav && <StageNav />}
       {showDiscoverNav && <DiscoverNav />}
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 min-h-0 overflow-hidden">
         <Routes>
           <Route path="/" element={<RoleLanding />} />
           <Route path="/founder" element={<FounderLanding />} />
@@ -160,18 +167,23 @@ function LayoutContent() {
             <Route path="client-feedback" element={<ClientFeedback />} />
             <Route path="roadmap" element={<RoadmapUpdater />} />
             <Route path="pricing-lab" element={<PricingLab />} />
+            <Route path="business" element={<Business />} />
           </Route>
+          {/* Stage Gate - top-level tab next to Commercial Validation */}
+          <Route path="/stage-gate" element={<StageGate />} />
           {/* Stage 07 - Commercial */}
           <Route path="/commercial" element={<RequireVenture><CommercialLayout /></RequireVenture>}>
             <Route index element={<Navigate to="pricing" replace />} />
             <Route path="pricing" element={<PricingTracker />} />
             <Route path="gtm" element={<GtmTracker />} />
+            <Route path="client-list" element={<GtmClientList />} />
+            <Route path="business" element={<Business />} />
           </Route>
-          {/* Legacy redirects */}
-          <Route path="/idea-intake" element={<Navigate to="/define/idea-intake" replace />} />
-          <Route path="/scoring" element={<Navigate to="/define/scoring" replace />} />
-          <Route path="/pressure-test" element={<Navigate to="/define/pressure-test" replace />} />
-          <Route path="/outputs" element={<Navigate to="/define/business-brief" replace />} />
+            {/* Legacy redirects */}
+            <Route path="/idea-intake" element={<Navigate to="/define/idea-intake" replace />} />
+            <Route path="/scoring" element={<Navigate to="/define/scoring" replace />} />
+            <Route path="/pressure-test" element={<Navigate to="/define/pressure-test" replace />} />
+            <Route path="/outputs" element={<Navigate to="/define/business-brief" replace />} />
         </Routes>
       </main>
     </div>
@@ -181,11 +193,13 @@ function LayoutContent() {
 export default function App() {
   return (
     <BrowserRouter>
-      <VentureProvider>
-        <DiscoverProvider>
-          <LayoutContent />
-        </DiscoverProvider>
-      </VentureProvider>
+      <RoleProvider>
+        <VentureProvider>
+          <DiscoverProvider>
+            <LayoutContent />
+          </DiscoverProvider>
+        </VentureProvider>
+      </RoleProvider>
     </BrowserRouter>
   )
 }

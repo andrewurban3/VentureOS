@@ -3,17 +3,24 @@
 -- Relational tables for Venture OS knowledge graph RAG
 -- ============================================================
 
--- Keep old column as legacy backup
-ALTER TABLE ventures ADD COLUMN IF NOT EXISTS data_legacy jsonb;
-UPDATE ventures SET data_legacy = data WHERE data_legacy IS NULL;
-
--- Rename existing table to avoid conflicts, then recreate
-ALTER TABLE ventures RENAME TO ventures_old;
+-- Migrate from old schema only if ventures exists with legacy data column.
+-- Skip if ventures has new schema (name_value) or doesn't exist.
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'ventures')
+     AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'ventures' AND column_name = 'data')
+     AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'ventures' AND column_name = 'name_value') THEN
+    ALTER TABLE ventures ADD COLUMN IF NOT EXISTS data_legacy jsonb;
+    UPDATE ventures SET data_legacy = data WHERE data_legacy IS NULL;
+    DROP TABLE IF EXISTS ventures_old;
+    ALTER TABLE ventures RENAME TO ventures_old;
+  END IF;
+END $$;
 
 -- ============================================================
 -- 1. ventures (core metadata)
 -- ============================================================
-CREATE TABLE ventures (
+CREATE TABLE IF NOT EXISTS ventures (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name_value text NOT NULL,
   name_source text NOT NULL DEFAULT 'FOUNDER',
@@ -30,13 +37,13 @@ CREATE TABLE ventures (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_ventures_stage ON ventures(stage_value);
-CREATE INDEX idx_ventures_updated ON ventures(updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_ventures_stage ON ventures(stage_value);
+CREATE INDEX IF NOT EXISTS idx_ventures_updated ON ventures(updated_at DESC);
 
 -- ============================================================
 -- 2. idea_intakes
 -- ============================================================
-CREATE TABLE idea_intakes (
+CREATE TABLE IF NOT EXISTS idea_intakes (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   venture_id uuid NOT NULL UNIQUE REFERENCES ventures(id) ON DELETE CASCADE,
   messages jsonb NOT NULL DEFAULT '[]'::jsonb,
@@ -49,7 +56,7 @@ CREATE TABLE idea_intakes (
 -- ============================================================
 -- 3. scoring_results
 -- ============================================================
-CREATE TABLE scoring_results (
+CREATE TABLE IF NOT EXISTS scoring_results (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   venture_id uuid NOT NULL UNIQUE REFERENCES ventures(id) ON DELETE CASCADE,
   corporate jsonb,
@@ -63,7 +70,7 @@ CREATE TABLE scoring_results (
 -- ============================================================
 -- 4. icp_documents
 -- ============================================================
-CREATE TABLE icp_documents (
+CREATE TABLE IF NOT EXISTS icp_documents (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   venture_id uuid NOT NULL UNIQUE REFERENCES ventures(id) ON DELETE CASCADE,
   industry text NOT NULL DEFAULT '',
@@ -84,12 +91,12 @@ CREATE TABLE icp_documents (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_icp_industry ON icp_documents(industry);
+CREATE INDEX IF NOT EXISTS idx_icp_industry ON icp_documents(industry);
 
 -- ============================================================
 -- 5. competitors
 -- ============================================================
-CREATE TABLE competitors (
+CREATE TABLE IF NOT EXISTS competitors (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   venture_id uuid NOT NULL REFERENCES ventures(id) ON DELETE CASCADE,
   name text NOT NULL,
@@ -120,13 +127,13 @@ CREATE TABLE competitors (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_competitors_venture ON competitors(venture_id);
-CREATE INDEX idx_competitors_threat ON competitors(threat_level);
+CREATE INDEX IF NOT EXISTS idx_competitors_venture ON competitors(venture_id);
+CREATE INDEX IF NOT EXISTS idx_competitors_threat ON competitors(threat_level);
 
 -- ============================================================
 -- 6. competitor_analyses (landscape summary per venture)
 -- ============================================================
-CREATE TABLE competitor_analyses (
+CREATE TABLE IF NOT EXISTS competitor_analyses (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   venture_id uuid NOT NULL UNIQUE REFERENCES ventures(id) ON DELETE CASCADE,
   landscape_summary text,
@@ -138,7 +145,7 @@ CREATE TABLE competitor_analyses (
 -- ============================================================
 -- 7. pressure_test_sessions
 -- ============================================================
-CREATE TABLE pressure_test_sessions (
+CREATE TABLE IF NOT EXISTS pressure_test_sessions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   venture_id uuid NOT NULL REFERENCES ventures(id) ON DELETE CASCADE,
   persona_id text NOT NULL,
@@ -148,12 +155,12 @@ CREATE TABLE pressure_test_sessions (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_pressure_tests_venture ON pressure_test_sessions(venture_id);
+CREATE INDEX IF NOT EXISTS idx_pressure_tests_venture ON pressure_test_sessions(venture_id);
 
 -- ============================================================
 -- 8. saved_insights
 -- ============================================================
-CREATE TABLE saved_insights (
+CREATE TABLE IF NOT EXISTS saved_insights (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   venture_id uuid NOT NULL REFERENCES ventures(id) ON DELETE CASCADE,
   persona_id text NOT NULL,
@@ -164,12 +171,12 @@ CREATE TABLE saved_insights (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_saved_insights_venture ON saved_insights(venture_id);
+CREATE INDEX IF NOT EXISTS idx_saved_insights_venture ON saved_insights(venture_id);
 
 -- ============================================================
 -- 9. client_list_entries
 -- ============================================================
-CREATE TABLE client_list_entries (
+CREATE TABLE IF NOT EXISTS client_list_entries (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   venture_id uuid NOT NULL REFERENCES ventures(id) ON DELETE CASCADE,
   company_name text NOT NULL,
@@ -185,13 +192,13 @@ CREATE TABLE client_list_entries (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_client_list_venture ON client_list_entries(venture_id);
-CREATE INDEX idx_client_list_status ON client_list_entries(status);
+CREATE INDEX IF NOT EXISTS idx_client_list_venture ON client_list_entries(venture_id);
+CREATE INDEX IF NOT EXISTS idx_client_list_status ON client_list_entries(status);
 
 -- ============================================================
 -- 10. client_lists (metadata per venture)
 -- ============================================================
-CREATE TABLE client_lists (
+CREATE TABLE IF NOT EXISTS client_lists (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   venture_id uuid NOT NULL UNIQUE REFERENCES ventures(id) ON DELETE CASCADE,
   generated_at timestamptz NOT NULL DEFAULT now()
@@ -200,7 +207,7 @@ CREATE TABLE client_lists (
 -- ============================================================
 -- 11. financial_models
 -- ============================================================
-CREATE TABLE financial_models (
+CREATE TABLE IF NOT EXISTS financial_models (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   venture_id uuid NOT NULL UNIQUE REFERENCES ventures(id) ON DELETE CASCADE,
   mvp_cost jsonb,
@@ -213,7 +220,7 @@ CREATE TABLE financial_models (
 -- ============================================================
 -- 12. interview_uploads
 -- ============================================================
-CREATE TABLE interview_uploads (
+CREATE TABLE IF NOT EXISTS interview_uploads (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   venture_id uuid NOT NULL REFERENCES ventures(id) ON DELETE CASCADE,
   transcript text NOT NULL DEFAULT '',
@@ -227,12 +234,12 @@ CREATE TABLE interview_uploads (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_interview_uploads_venture ON interview_uploads(venture_id);
+CREATE INDEX IF NOT EXISTS idx_interview_uploads_venture ON interview_uploads(venture_id);
 
 -- ============================================================
 -- 13. interview_extractions
 -- ============================================================
-CREATE TABLE interview_extractions (
+CREATE TABLE IF NOT EXISTS interview_extractions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   upload_id uuid NOT NULL UNIQUE REFERENCES interview_uploads(id) ON DELETE CASCADE,
   venture_id uuid NOT NULL REFERENCES ventures(id) ON DELETE CASCADE,
@@ -247,12 +254,12 @@ CREATE TABLE interview_extractions (
   generated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_interview_extractions_venture ON interview_extractions(venture_id);
+CREATE INDEX IF NOT EXISTS idx_interview_extractions_venture ON interview_extractions(venture_id);
 
 -- ============================================================
 -- 14. cross_interview_syntheses
 -- ============================================================
-CREATE TABLE cross_interview_syntheses (
+CREATE TABLE IF NOT EXISTS cross_interview_syntheses (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   venture_id uuid NOT NULL UNIQUE REFERENCES ventures(id) ON DELETE CASCADE,
   themes jsonb NOT NULL DEFAULT '[]'::jsonb,
@@ -265,7 +272,7 @@ CREATE TABLE cross_interview_syntheses (
 -- ============================================================
 -- 15. moat_assessments
 -- ============================================================
-CREATE TABLE moat_assessments (
+CREATE TABLE IF NOT EXISTS moat_assessments (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   venture_id uuid NOT NULL UNIQUE REFERENCES ventures(id) ON DELETE CASCADE,
   recommended_moats jsonb NOT NULL DEFAULT '[]'::jsonb,
@@ -280,7 +287,7 @@ CREATE TABLE moat_assessments (
 -- ============================================================
 -- 16. strategy_sessions
 -- ============================================================
-CREATE TABLE strategy_sessions (
+CREATE TABLE IF NOT EXISTS strategy_sessions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   venture_id uuid NOT NULL REFERENCES ventures(id) ON DELETE CASCADE,
   persona_id text NOT NULL,
@@ -290,12 +297,12 @@ CREATE TABLE strategy_sessions (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_strategy_sessions_venture ON strategy_sessions(venture_id);
+CREATE INDEX IF NOT EXISTS idx_strategy_sessions_venture ON strategy_sessions(venture_id);
 
 -- ============================================================
 -- 17. business_briefs
 -- ============================================================
-CREATE TABLE business_briefs (
+CREATE TABLE IF NOT EXISTS business_briefs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   venture_id uuid NOT NULL UNIQUE REFERENCES ventures(id) ON DELETE CASCADE,
   content jsonb NOT NULL DEFAULT '{}'::jsonb,
@@ -308,7 +315,7 @@ CREATE TABLE business_briefs (
 -- ============================================================
 -- 18. investment_memos
 -- ============================================================
-CREATE TABLE investment_memos (
+CREATE TABLE IF NOT EXISTS investment_memos (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   venture_id uuid NOT NULL UNIQUE REFERENCES ventures(id) ON DELETE CASCADE,
   content jsonb NOT NULL DEFAULT '{}'::jsonb,
@@ -321,7 +328,7 @@ CREATE TABLE investment_memos (
 -- ============================================================
 -- 19. pitch_decks
 -- ============================================================
-CREATE TABLE pitch_decks (
+CREATE TABLE IF NOT EXISTS pitch_decks (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   venture_id uuid NOT NULL UNIQUE REFERENCES ventures(id) ON DELETE CASCADE,
   content jsonb NOT NULL DEFAULT '{}'::jsonb,
@@ -334,7 +341,7 @@ CREATE TABLE pitch_decks (
 -- ============================================================
 -- 20. venture_citations
 -- ============================================================
-CREATE TABLE venture_citations (
+CREATE TABLE IF NOT EXISTS venture_citations (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   venture_id uuid NOT NULL REFERENCES ventures(id) ON DELETE CASCADE,
   source text NOT NULL,
@@ -346,12 +353,12 @@ CREATE TABLE venture_citations (
   generated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_venture_citations_venture ON venture_citations(venture_id);
+CREATE INDEX IF NOT EXISTS idx_venture_citations_venture ON venture_citations(venture_id);
 
 -- ============================================================
 -- 21. discover_research
 -- ============================================================
-CREATE TABLE discover_research (
+CREATE TABLE IF NOT EXISTS discover_research (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   venture_id uuid REFERENCES ventures(id) ON DELETE CASCADE,
   type text NOT NULL,
@@ -362,7 +369,7 @@ CREATE TABLE discover_research (
   generated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_discover_research_venture ON discover_research(venture_id);
+CREATE INDEX IF NOT EXISTS idx_discover_research_venture ON discover_research(venture_id);
 
 -- ============================================================
 -- RLS Policies (basic: allow all with anon key)
@@ -403,6 +410,10 @@ BEGIN
     'venture_citations','discover_research'
   ])
   LOOP
+    EXECUTE format('DROP POLICY IF EXISTS "allow_all_select_%s" ON %I', tbl, tbl);
+    EXECUTE format('DROP POLICY IF EXISTS "allow_all_insert_%s" ON %I', tbl, tbl);
+    EXECUTE format('DROP POLICY IF EXISTS "allow_all_update_%s" ON %I', tbl, tbl);
+    EXECUTE format('DROP POLICY IF EXISTS "allow_all_delete_%s" ON %I', tbl, tbl);
     EXECUTE format('CREATE POLICY "allow_all_select_%s" ON %I FOR SELECT USING (true)', tbl, tbl);
     EXECUTE format('CREATE POLICY "allow_all_insert_%s" ON %I FOR INSERT WITH CHECK (true)', tbl, tbl);
     EXECUTE format('CREATE POLICY "allow_all_update_%s" ON %I FOR UPDATE USING (true) WITH CHECK (true)', tbl, tbl);

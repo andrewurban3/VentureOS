@@ -22,7 +22,8 @@ function addToMyVentures(id: string) {
 }
 
 export function FounderLanding() {
-  const { ventures, setActiveVentureId, createVenture, loading, error } = useVentures()
+  const { ventures, setActiveVentureId, createVenture, loadVentures, loading, error } = useVentures()
+  const [retrying, setRetrying] = useState(false)
   const navigate = useNavigate()
   const [newName, setNewName] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -74,10 +75,24 @@ export function FounderLanding() {
 
         {error && (
           <div
-            className="px-4 py-3 rounded-lg text-sm"
+            className="px-4 py-3 rounded-lg text-sm space-y-2"
             style={{ background: 'rgba(239,68,68,0.15)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.3)' }}
           >
-            {error}
+            <p>{error}</p>
+            <p className="text-xs opacity-90">
+              Ensure Supabase migrations are applied (e.g. supabase db push).
+            </p>
+            <button
+              onClick={async () => {
+                setRetrying(true)
+                await loadVentures()
+                setRetrying(false)
+              }}
+              disabled={retrying}
+              className="mt-2 px-4 py-2 rounded-lg text-sm font-medium bg-[rgba(239,68,68,0.2)] hover:bg-[rgba(239,68,68,0.3)] border border-[rgba(239,68,68,0.4)] disabled:opacity-50"
+            >
+              {retrying ? 'Retrying...' : 'Retry'}
+            </button>
           </div>
         )}
 

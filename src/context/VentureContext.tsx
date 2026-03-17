@@ -7,7 +7,14 @@ import {
   saveVentureUpdates,
 } from '@/services/ventures'
 import { syncVentureToGraph } from '@/services/knowledgeGraph'
-import { getRilletVenturePayload } from '@/data/demoVenture'
+import { getRilletVenturePayload, getCraniumVenturePayload } from '@/data/demoVenture'
+function extractErrorMessage(e: unknown, fallback: string): string {
+  if (e && typeof e === 'object' && 'message' in e) {
+    const msg = (e as { message?: string }).message
+    return typeof msg === 'string' ? msg : fallback
+  }
+  return e instanceof Error ? e.message : fallback
+}
 
 interface VentureContextValue {
   ventures: Record<string, Venture>
@@ -33,6 +40,7 @@ export function VentureProvider({ children }: { children: ReactNode }) {
   const hydratedIds = useRef<Set<string>>(new Set())
 
   const rilletSeeded = useRef(false)
+  const craniumSeeded = useRef(false)
 
   const loadVentures = useCallback(async () => {
     setLoading(true)
@@ -41,6 +49,7 @@ export function VentureProvider({ children }: { children: ReactNode }) {
       let list = await listVenturesFromDb()
 
       let rilletIdToHydrate: string | null = null
+      let craniumIdToHydrate: string | null = null
       if (!rilletSeeded.current) {
         rilletSeeded.current = true
         const existing = list.find((v) => v.name?.value === 'Rillet')
@@ -89,6 +98,54 @@ export function VentureProvider({ children }: { children: ReactNode }) {
           console.warn('Failed to auto-seed Rillet demo venture:', seedErr)
         }
       }
+      if (!craniumSeeded.current) {
+        craniumSeeded.current = true
+        const existing = list.find((v) => v.name?.value === 'Cranium')
+        try {
+          if (!existing) {
+            const cranium = await createVentureInDb('Cranium')
+            const payload = getCraniumVenturePayload()
+            await saveVentureUpdates(cranium.id, payload)
+            await syncVentureToGraph(cranium.id, payload).catch((e) =>
+              console.warn('RAG sync for Cranium failed:', e)
+            )
+            list = await listVenturesFromDb()
+            craniumIdToHydrate = cranium.id
+          } else {
+            const full = await hydrateVenture(existing.id)
+            const missingStage04 =
+              full &&
+              (!full.designPartnerPipeline?.candidates?.length ||
+                !full.designPartnerFeedbackSummary ||
+                !full.mvpFeatureList?.features?.length)
+            const missingStage05_07 =
+              full &&
+              (!full.technicalArchitecture ||
+                !full.productRoadmap ||
+                !full.featurePrdList?.prds?.length ||
+                !full.sprintPlan ||
+                !full.clientFeedbackSummary ||
+                !full.updatedRoadmap ||
+                !full.pricingLab ||
+                !full.pricingImplementationTracker ||
+                !full.gtmTracker)
+            const needsBackfill =
+              full &&
+              (!full.ideaIntake?.messages?.length || missingStage04 || missingStage05_07)
+            if (needsBackfill) {
+              const payload = getCraniumVenturePayload()
+              await saveVentureUpdates(existing.id, payload)
+              await syncVentureToGraph(existing.id, payload).catch((e) =>
+                console.warn('RAG sync for Cranium failed:', e)
+              )
+              list = await listVenturesFromDb()
+              craniumIdToHydrate = existing.id
+            }
+          }
+        } catch (seedErr) {
+          console.warn('Failed to auto-seed Cranium demo venture:', seedErr)
+        }
+      }
 
       const map: Record<string, Venture> = {}
       list.forEach((v) => {
@@ -97,6 +154,7 @@ export function VentureProvider({ children }: { children: ReactNode }) {
       const rilletFromList = list.find((v) => v.name?.value === 'Rillet')
       if (rilletFromList) {
         const current = map[rilletFromList.id]
+        const missingIdeaIntake = !current.ideaIntake?.messages?.length
         const missingStage04 = !current.designPartnerPipeline?.candidates?.length
         const missingStage05_07 =
           !current.technicalArchitecture ||
@@ -108,10 +166,54 @@ export function VentureProvider({ children }: { children: ReactNode }) {
           !current.pricingLab ||
           !current.pricingImplementationTracker ||
           !current.gtmTracker
-        if (missingStage04 || missingStage05_07) {
+        if (missingIdeaIntake || missingStage04 || missingStage05_07) {
           const payload = getRilletVenturePayload()
           map[rilletFromList.id] = {
             ...current,
+            ...(missingIdeaIntake && {
+              ideaIntake: payload.ideaIntake,
+            }),
+            ...(missingStage04 && {
+              designPartnerPipeline: payload.designPartnerPipeline,
+              designPartnerFeedbackSummary: payload.designPartnerFeedbackSummary,
+              mvpFeatureList: payload.mvpFeatureList,
+            }),
+            ...(missingStage05_07 && {
+              technicalArchitecture: payload.technicalArchitecture ?? current.technicalArchitecture,
+              productRoadmap: payload.productRoadmap ?? current.productRoadmap,
+              featurePrdList: payload.featurePrdList ?? current.featurePrdList,
+              sprintPlan: payload.sprintPlan ?? current.sprintPlan,
+              clientFeedbackSummary: payload.clientFeedbackSummary ?? current.clientFeedbackSummary,
+              updatedRoadmap: payload.updatedRoadmap ?? current.updatedRoadmap,
+              pricingLab: payload.pricingLab ?? current.pricingLab,
+              pricingImplementationTracker: payload.pricingImplementationTracker ?? current.pricingImplementationTracker,
+              gtmTracker: payload.gtmTracker ?? current.gtmTracker,
+            }),
+          }
+        }
+      }
+      const craniumFromList = list.find((v) => v.name?.value === 'Cranium')
+      if (craniumFromList) {
+        const current = map[craniumFromList.id]
+        const missingIdeaIntake = !current.ideaIntake?.messages?.length
+        const missingStage04 = !current.designPartnerPipeline?.candidates?.length
+        const missingStage05_07 =
+          !current.technicalArchitecture ||
+          !current.productRoadmap ||
+          !current.featurePrdList?.prds?.length ||
+          !current.sprintPlan ||
+          !current.clientFeedbackSummary ||
+          !current.updatedRoadmap ||
+          !current.pricingLab ||
+          !current.pricingImplementationTracker ||
+          !current.gtmTracker
+        if (missingIdeaIntake || missingStage04 || missingStage05_07) {
+          const payload = getCraniumVenturePayload()
+          map[craniumFromList.id] = {
+            ...current,
+            ...(missingIdeaIntake && {
+              ideaIntake: payload.ideaIntake,
+            }),
             ...(missingStage04 && {
               designPartnerPipeline: payload.designPartnerPipeline,
               designPartnerFeedbackSummary: payload.designPartnerFeedbackSummary,
@@ -135,6 +237,7 @@ export function VentureProvider({ children }: { children: ReactNode }) {
         const hydrated = await hydrateVenture(rilletIdToHydrate)
         if (hydrated) {
           let ventureToSet = hydrated
+          const missingIdeaIntake = !ventureToSet.ideaIntake?.messages?.length
           const missingStage04 =
             !ventureToSet.designPartnerPipeline?.candidates?.length ||
             !ventureToSet.designPartnerFeedbackSummary ||
@@ -149,10 +252,13 @@ export function VentureProvider({ children }: { children: ReactNode }) {
             !ventureToSet.pricingLab ||
             !ventureToSet.pricingImplementationTracker ||
             !ventureToSet.gtmTracker
-          if (missingStage04 || missingStage05_07) {
+          if (missingIdeaIntake || missingStage04 || missingStage05_07) {
             const payload = getRilletVenturePayload()
             ventureToSet = {
               ...ventureToSet,
+              ...(missingIdeaIntake && {
+                ideaIntake: payload.ideaIntake ?? ventureToSet.ideaIntake,
+              }),
               ...(missingStage04 && {
                 designPartnerPipeline: payload.designPartnerPipeline ?? ventureToSet.designPartnerPipeline,
                 designPartnerFeedbackSummary: payload.designPartnerFeedbackSummary ?? ventureToSet.designPartnerFeedbackSummary,
@@ -175,9 +281,59 @@ export function VentureProvider({ children }: { children: ReactNode }) {
           hydratedIds.current.add(rilletIdToHydrate)
         }
       }
+      if (craniumIdToHydrate) {
+        const hydrated = await hydrateVenture(craniumIdToHydrate)
+        if (hydrated) {
+          let ventureToSet = hydrated
+          const missingIdeaIntake = !ventureToSet.ideaIntake?.messages?.length
+          const missingStage04 =
+            !ventureToSet.designPartnerPipeline?.candidates?.length ||
+            !ventureToSet.designPartnerFeedbackSummary ||
+            !ventureToSet.mvpFeatureList?.features?.length
+          const missingStage05_07 =
+            !ventureToSet.technicalArchitecture ||
+            !ventureToSet.productRoadmap ||
+            !ventureToSet.featurePrdList?.prds?.length ||
+            !ventureToSet.sprintPlan ||
+            !ventureToSet.clientFeedbackSummary ||
+            !ventureToSet.updatedRoadmap ||
+            !ventureToSet.pricingLab ||
+            !ventureToSet.pricingImplementationTracker ||
+            !ventureToSet.gtmTracker
+          if (missingIdeaIntake || missingStage04 || missingStage05_07) {
+            const payload = getCraniumVenturePayload()
+            ventureToSet = {
+              ...ventureToSet,
+              ...(missingIdeaIntake && {
+                ideaIntake: payload.ideaIntake ?? ventureToSet.ideaIntake,
+              }),
+              ...(missingStage04 && {
+                designPartnerPipeline: payload.designPartnerPipeline ?? ventureToSet.designPartnerPipeline,
+                designPartnerFeedbackSummary: payload.designPartnerFeedbackSummary ?? ventureToSet.designPartnerFeedbackSummary,
+                mvpFeatureList: payload.mvpFeatureList ?? ventureToSet.mvpFeatureList,
+              }),
+              ...(missingStage05_07 && {
+                technicalArchitecture: payload.technicalArchitecture ?? ventureToSet.technicalArchitecture,
+                productRoadmap: payload.productRoadmap ?? ventureToSet.productRoadmap,
+                featurePrdList: payload.featurePrdList ?? ventureToSet.featurePrdList,
+                sprintPlan: payload.sprintPlan ?? ventureToSet.sprintPlan,
+                clientFeedbackSummary: payload.clientFeedbackSummary ?? ventureToSet.clientFeedbackSummary,
+                updatedRoadmap: payload.updatedRoadmap ?? ventureToSet.updatedRoadmap,
+                pricingLab: payload.pricingLab ?? ventureToSet.pricingLab,
+                pricingImplementationTracker: payload.pricingImplementationTracker ?? ventureToSet.pricingImplementationTracker,
+                gtmTracker: payload.gtmTracker ?? ventureToSet.gtmTracker,
+              }),
+            }
+          }
+          map[craniumIdToHydrate] = ventureToSet
+          hydratedIds.current.add(craniumIdToHydrate)
+        }
+      }
       setVentures(map)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load ventures')
+      const msg = extractErrorMessage(e, 'Failed to load ventures')
+      setError(msg)
+      console.error('loadVentures failed:', e)
     } finally {
       setLoading(false)
     }
@@ -194,13 +350,16 @@ export function VentureProvider({ children }: { children: ReactNode }) {
         let full = await hydrateVenture(id)
         if (full) {
           const isRillet = full.name?.value === 'Rillet'
+          const isCranium = full.name?.value === 'Cranium'
+          const missingIdeaIntake =
+            (isRillet || isCranium) && !(full.ideaIntake?.messages?.length)
           const missingStage04 =
-            isRillet &&
+            (isRillet || isCranium) &&
             (!full.designPartnerPipeline?.candidates?.length ||
               !full.designPartnerFeedbackSummary ||
               !full.mvpFeatureList?.features?.length)
           const missingStage05_07 =
-            isRillet &&
+            (isRillet || isCranium) &&
             (!full.technicalArchitecture ||
               !full.productRoadmap ||
               !full.featurePrdList?.prds?.length ||
@@ -210,10 +369,13 @@ export function VentureProvider({ children }: { children: ReactNode }) {
               !full.pricingLab ||
               !full.pricingImplementationTracker ||
               !full.gtmTracker)
-          if (missingStage04 || missingStage05_07) {
-            const payload = getRilletVenturePayload()
+          if (missingIdeaIntake || missingStage04 || missingStage05_07) {
+            const payload = isCranium ? getCraniumVenturePayload() : getRilletVenturePayload()
             full = {
               ...full,
+              ...(missingIdeaIntake && {
+                ideaIntake: payload.ideaIntake ?? full.ideaIntake,
+              }),
               ...(missingStage04 && {
                 designPartnerPipeline: payload.designPartnerPipeline ?? full.designPartnerPipeline,
                 designPartnerFeedbackSummary: payload.designPartnerFeedbackSummary ?? full.designPartnerFeedbackSummary,
@@ -231,12 +393,17 @@ export function VentureProvider({ children }: { children: ReactNode }) {
                 gtmTracker: payload.gtmTracker ?? full.gtmTracker,
               }),
             }
+            if (missingIdeaIntake && payload?.ideaIntake) {
+              saveVentureUpdates(id, { ideaIntake: payload.ideaIntake }).catch(() => {})
+            }
           }
           hydratedIds.current.add(id)
           setVentures((prev) => ({ ...prev, [id]: full }))
         }
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Failed to load venture data')
+        const msg = extractErrorMessage(e, 'Failed to load venture data')
+        setError(msg)
+        console.error('hydrateVenture failed:', e)
       }
     }
   }, [])
@@ -247,9 +414,11 @@ export function VentureProvider({ children }: { children: ReactNode }) {
       const updatesForSave = updates
       if (saveTimeouts.current[id]) clearTimeout(saveTimeouts.current[id])
       saveTimeouts.current[id] = setTimeout(() => {
-        saveVentureUpdates(id, updatesForSave).catch((e) =>
-          setError(e instanceof Error ? e.message : 'Failed to save')
-        )
+        saveVentureUpdates(id, updatesForSave).catch((e) => {
+          const msg = extractErrorMessage(e, 'Failed to save')
+          setError(msg)
+          console.error('saveVentureUpdates failed:', e)
+        })
         delete saveTimeouts.current[id]
       }, DEBOUNCE_MS)
       return next

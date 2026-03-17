@@ -133,16 +133,29 @@ export function getMvpReadinessStatus(venture: Venture): StatusItem[] {
 }
 
 export function getBuildPilotStatus(venture: Venture): StatusItem[] {
+  const businessDone = !!(
+    (venture.ventureSuccessCriteria?.length ?? 0) > 0 ||
+    ((venture.revenueModel ?? '').trim().length > 0) ||
+    (venture.businessKpis?.length ?? 0) > 0
+  )
   return [
     { label: 'Client Feedback', done: !!venture.clientFeedbackSummary, path: '/build/client-feedback' },
     { label: 'Roadmap Updater', done: !!venture.updatedRoadmap, path: '/build/roadmap' },
     { label: 'Pricing Lab', done: !!venture.pricingLab, path: '/build/pricing-lab' },
+    { label: 'Business', done: businessDone, path: '/build/business' },
   ]
 }
 
 export function getCommercialStatus(venture: Venture): StatusItem[] {
+  const businessDone = !!(
+    (venture.ventureSuccessCriteria?.length ?? 0) > 0 ||
+    ((venture.revenueModel ?? '').trim().length > 0) ||
+    (venture.businessKpis?.length ?? 0) > 0
+  )
   return [
     { label: 'Pricing Tracker', done: !!venture.pricingImplementationTracker, path: '/commercial/pricing' },
     { label: 'GTM Tracker', done: !!venture.gtmTracker, path: '/commercial/gtm' },
+    { label: 'Client List', done: !!(venture.clientList?.entries?.length), path: '/commercial/client-list' },
+    { label: 'Business', done: businessDone, path: '/commercial/business' },
   ]
 }

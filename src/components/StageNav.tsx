@@ -69,6 +69,25 @@ export default function StageNav() {
             </NavLink>
           )
         })}
+        <NavLink
+          to="/stage-gate"
+          className="font-mono"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0 14px',
+            fontSize: 13,
+            fontWeight: 600,
+            whiteSpace: 'nowrap',
+            textDecoration: 'none',
+            borderRadius: '6px 6px 0 0',
+            transition: 'background 0.15s, opacity 0.15s',
+            background: activeStageId === 'stage-gate' ? 'var(--accent-primary)' : 'transparent',
+            color: activeStageId === 'stage-gate' ? '#fff' : 'var(--text-primary)',
+          }}
+        >
+          Stage Gate
+        </NavLink>
       </div>
 
       {/* Feature sub-nav */}

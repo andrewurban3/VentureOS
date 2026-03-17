@@ -4,6 +4,7 @@ import { useVentures } from '@/context/VentureContext'
 
 function getActiveFounderStageId(pathname: string): string {
   if (pathname === '/founder') return 'my-idea'
+  if (pathname.startsWith('/stage-gate')) return 'stage-gate'
 
   for (const stage of FOUNDER_STAGES) {
     if (stage.features.some((f) => pathname === f.path)) return stage.id
@@ -71,6 +72,24 @@ export default function FounderNav() {
             </NavLink>
           )
         })}
+        <NavLink
+          to="/stage-gate"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0 14px',
+            fontSize: 13,
+            fontWeight: 600,
+            whiteSpace: 'nowrap',
+            textDecoration: 'none',
+            borderRadius: '6px 6px 0 0',
+            transition: 'background 0.15s, opacity 0.15s',
+            background: activeStageId === 'stage-gate' ? 'var(--accent-primary)' : 'transparent',
+            color: activeStageId === 'stage-gate' ? '#fff' : 'var(--text-primary)',
+          }}
+        >
+          Stage Gate
+        </NavLink>
       </div>
 
       {/* Feature sub-nav */}

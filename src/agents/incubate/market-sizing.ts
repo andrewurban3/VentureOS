@@ -11,6 +11,7 @@ Return a JSON object with:
 - tam: number (total addressable market in USD)
 - sam: number (serviceable addressable market in USD)
 - som: number (serviceable obtainable market in USD)
+- cagr: number (compound annual growth rate as percentage, e.g. 22.5 for 22.5%)
 - methodology: string (2-3 paragraphs explaining top-down and bottom-up approach)
 - assumptions: array of { id: string, label: string, value: string | number, source: "AI_RESEARCH"|"AI_SYNTHESIS", citation?: { title, url }, confidence: "High"|"Medium"|"Low", updatedAt: string }`
 

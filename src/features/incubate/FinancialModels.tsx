@@ -172,6 +172,7 @@ export function FinancialModels() {
         tam: raw.tam ?? 0,
         sam: raw.sam ?? 0,
         som: raw.som ?? 0,
+        cagr: raw.cagr,
         methodology: raw.methodology ?? '',
         assumptions,
         generatedAt: now,
@@ -394,7 +395,7 @@ export function FinancialModels() {
             </div>
             {market ? (
               <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div className="rounded-lg p-3" style={{ background: 'rgba(124,106,247,0.08)', border: '1px solid rgba(124,106,247,0.2)' }}>
                     <div className="text-[10px] font-medium text-[var(--text-muted)] uppercase">TAM</div>
                     <div className="text-lg font-bold text-[var(--text-primary)]">
@@ -411,6 +412,12 @@ export function FinancialModels() {
                     <div className="text-[10px] font-medium text-[var(--text-muted)] uppercase">SOM</div>
                     <div className="text-lg font-bold text-[var(--text-primary)]">
                       ${(market.som ?? 0).toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="rounded-lg p-3" style={{ background: 'rgba(124,106,247,0.08)', border: '1px solid rgba(124,106,247,0.2)' }}>
+                    <div className="text-[10px] font-medium text-[var(--text-muted)] uppercase">CAGR</div>
+                    <div className="text-lg font-bold text-[var(--text-primary)]">
+                      {market.cagr != null ? `${market.cagr}%` : '—'}
                     </div>
                   </div>
                 </div>

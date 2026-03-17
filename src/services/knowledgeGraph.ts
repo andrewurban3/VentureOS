@@ -284,8 +284,8 @@ function extractNodes(ventureId: string, updates: Partial<Venture>): KnowledgeNo
         source_table: 'financial_models',
         source_id: `${ventureId}:market`,
         title: 'Market Sizing',
-        content: `TAM: $${fm.marketSizing.tam.toLocaleString()} / SAM: $${fm.marketSizing.sam.toLocaleString()} / SOM: $${fm.marketSizing.som.toLocaleString()}\n${fm.marketSizing.methodology}`,
-        metadata: { tam: fm.marketSizing.tam, sam: fm.marketSizing.sam, som: fm.marketSizing.som },
+        content: `TAM: $${fm.marketSizing.tam.toLocaleString()} / SAM: $${fm.marketSizing.sam.toLocaleString()} / SOM: $${fm.marketSizing.som.toLocaleString()}${fm.marketSizing.cagr != null ? ` / CAGR: ${fm.marketSizing.cagr}%` : ''}\n${fm.marketSizing.methodology}`,
+        metadata: { tam: fm.marketSizing.tam, sam: fm.marketSizing.sam, som: fm.marketSizing.som, cagr: fm.marketSizing.cagr },
       })
       for (const a of fm.marketSizing.assumptions ?? []) {
         nodes.push({

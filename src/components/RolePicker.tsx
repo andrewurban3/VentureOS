@@ -1,32 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useRole, type Role } from '@/context/RoleContext'
 
-const STORAGE_KEY = 'venture_os_role'
-export type Role = 'founder' | 'venture-lead'
-
-function getStoredRole(): Role {
-  const stored = localStorage.getItem(STORAGE_KEY)
-  return stored === 'venture-lead' ? 'venture-lead' : 'founder'
-}
-
-function setStoredRole(role: Role) {
-  localStorage.setItem(STORAGE_KEY, role)
-}
-
-export function useRole(): [Role, (role: Role) => void] {
-  const [role, setRoleState] = useState<Role>(getStoredRole)
-
-  const setRole = (r: Role) => {
-    setStoredRole(r)
-    setRoleState(r)
-  }
-
-  return [role, setRole]
-}
-
-export function getDefaultRoute(): string {
-  return getStoredRole() === 'venture-lead' ? '/venture-lead' : '/founder'
-}
+export { useRole, getDefaultRoute } from '@/context/RoleContext'
+export type { Role } from '@/context/RoleContext'
 
 export function RolePicker() {
   const [role, setRole] = useRole()
@@ -66,16 +43,11 @@ export function RolePicker() {
         onClick={() => setOpen((o) => !o)}
         className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-[var(--border)] hover:bg-[rgba(124,106,247,0.08)] hover:border-[rgba(124,106,247,0.3)] transition-colors"
         aria-expanded={open}
-        aria-haspopup="listbox"
       >
-        <span className="text-[var(--text-muted)]">View as</span>
-        <span className="text-[var(--text-primary)]">{label}</span>
-        <svg
-          className="w-4 h-4 text-[var(--text-muted)]"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <span className="text-[var(--text-primary)] truncate max-w-[120px]">
+          {label}
+        </span>
+        <svg className="w-4 h-4 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
@@ -87,7 +59,6 @@ export function RolePicker() {
             border: '1px solid var(--border)',
             boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
           }}
-          role="listbox"
         >
           <button
             onClick={() => handleSelect('founder')}
@@ -96,10 +67,8 @@ export function RolePicker() {
                 ? 'bg-[rgba(124,106,247,0.2)] text-[var(--accent-primary)]'
                 : 'text-[var(--text-primary)] hover:bg-[rgba(124,106,247,0.1)]'
             }`}
-            role="option"
-            aria-selected={role === 'founder'}
           >
-            Founder
+            View as Founder
           </button>
           <button
             onClick={() => handleSelect('venture-lead')}
@@ -108,10 +77,8 @@ export function RolePicker() {
                 ? 'bg-[rgba(124,106,247,0.2)] text-[var(--accent-primary)]'
                 : 'text-[var(--text-primary)] hover:bg-[rgba(124,106,247,0.1)]'
             }`}
-            role="option"
-            aria-selected={role === 'venture-lead'}
           >
-            Venture Lead
+            View as Venture Lead
           </button>
         </div>
       )}

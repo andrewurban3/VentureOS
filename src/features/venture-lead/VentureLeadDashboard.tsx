@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { PortfolioDashboard } from './PortfolioDashboard'
+import { PortfolioReport } from './PortfolioReport'
 import { useVentures } from '@/context/VentureContext'
 import { STAGES } from '@/constants/stages'
 import { STAGE_BASE_PATHS } from '@/constants/stageFeatures'
@@ -80,11 +81,12 @@ const CARD = {
 
 export function VentureLeadDashboard() {
   const { ventures, setActiveVentureId, loadVentures, createVenture, updateVenture, loading, error } = useVentures()
+  const [retrying, setRetrying] = useState(false)
   const navigate = useNavigate()
   const [creatingDemo, setCreatingDemo] = useState(false)
   const [creatingNew, setCreatingNew] = useState(false)
   const [newVentureName, setNewVentureName] = useState('')
-  const [view, setView] = useState<'list' | 'dashboard'>('dashboard')
+  const [view, setView] = useState<'list' | 'dashboard' | 'reports'>('dashboard')
   const ventureList = Object.values(ventures)
 
   const handleStartNew = async () => {
@@ -141,10 +143,24 @@ export function VentureLeadDashboard() {
 
         {error && (
           <div
-            className="px-4 py-3 rounded-lg text-sm"
+            className="px-4 py-3 rounded-lg text-sm space-y-2"
             style={{ background: 'rgba(239,68,68,0.15)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.3)' }}
           >
-            {error}
+            <p>{error}</p>
+            <p className="text-xs opacity-90">
+              Ensure Supabase migrations are applied (e.g. supabase db push).
+            </p>
+            <button
+              onClick={async () => {
+                setRetrying(true)
+                await loadVentures()
+                setRetrying(false)
+              }}
+              disabled={retrying}
+              className="mt-2 px-4 py-2 rounded-lg text-sm font-medium bg-[rgba(239,68,68,0.2)] hover:bg-[rgba(239,68,68,0.3)] border border-[rgba(239,68,68,0.4)] disabled:opacity-50"
+            >
+              {retrying ? 'Retrying...' : 'Retry'}
+            </button>
           </div>
         )}
 
@@ -265,6 +281,8 @@ export function VentureLeadDashboard() {
             </div>
           ) : view === 'dashboard' ? (
             <PortfolioDashboard />
+          ) : view === 'reports' ? (
+            <PortfolioReport />
           ) : (
             <div className="space-y-3">
               {ventureList.map((v) => {

@@ -1,10 +1,21 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useVentures } from '@/context/VentureContext'
+import { useRole } from '@/components/RolePicker'
 import { anthropicProvider } from '@/services/ai/anthropic'
 import { buildClientFeedbackBlocks, parseClientFeedbackResponse } from '@/agents/build/clientFeedback'
 import { ApiErrorBanner } from '@/components/ApiErrorBanner'
 import { SourceChip } from '@/components/SourceChip'
 import { createClientFeedbackSummaryDocx } from '@/services/export'
+import type { InterviewUpload } from '@/types/venture'
+
+function readFileAsText(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve((reader.result as string) ?? '')
+    reader.onerror = () => reject(reader.error)
+    reader.readAsText(file)
+  })
+}
 
 const CARD = {
   background: 'rgba(30,26,46,0.7)',
@@ -28,23 +39,99 @@ function SummarySection({ title, items, accentColor }: { title: string; items: s
   )
 }
 
+const PILOT_FEEDBACK_TYPE = 'Pilot feedback'
+
 export function ClientFeedback() {
   const { ventures, activeVentureId, updateVenture } = useVentures()
+  const [role] = useRole()
   const venture = activeVentureId ? ventures[activeVentureId] : null
   const [loading, setLoading] = useState(false)
   const [apiError, setApiError] = useState<string | null>(null)
   const [pilotNotes, setPilotNotes] = useState('')
   const [companyNames, setCompanyNames] = useState('')
+  const [transcriptPaste, setTranscriptPaste] = useState('')
+  const [transcriptCompany, setTranscriptCompany] = useState('')
 
   const summary = venture?.clientFeedbackSummary
+  const interviews = venture?.interviews
+  const allUploads = interviews?.uploads ?? []
+  const pilotUploads = allUploads.filter((u) => u.interviewType === PILOT_FEEDBACK_TYPE)
+  const extractions = interviews?.extractions ?? {}
+  const synthesis = interviews?.synthesis
+
+  const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const ext = file.name.split('.').pop()?.toLowerCase()
+    if (ext === 'txt' || ext === 'md') {
+      try {
+        const text = await readFileAsText(file)
+        setTranscriptPaste(text)
+      } catch {
+        setApiError('Could not read file')
+      }
+    } else {
+      setApiError('Supported: .txt, .md')
+    }
+    e.target.value = ''
+  }, [])
+
+  const handleAddTranscript = () => {
+    if (!venture || !activeVentureId || !transcriptPaste.trim()) return
+    const now = new Date().toISOString()
+    const upload: InterviewUpload = {
+      id: crypto.randomUUID(),
+      transcript: transcriptPaste.trim(),
+      intervieweeRole: 'Client',
+      intervieweeCompany: transcriptCompany.trim() || 'Unknown',
+      interviewDate: now.slice(0, 10),
+      conductedBy: role === 'founder' ? 'Founder' : 'Venture Lead',
+      interviewType: PILOT_FEEDBACK_TYPE,
+      uploadedBy: role === 'founder' ? 'FOUNDER' : 'VL',
+      uploadedAt: now,
+    }
+    updateVenture(activeVentureId, {
+      interviews: {
+        uploads: [...allUploads, upload],
+        extractions,
+        synthesis,
+      },
+    })
+    setTranscriptPaste('')
+    setTranscriptCompany('')
+  }
+
+  const handleRemoveTranscript = (uploadId: string) => {
+    if (!venture || !activeVentureId) return
+    const nextUploads = allUploads.filter((u) => u.id !== uploadId)
+    const { [uploadId]: _, ...nextExtractions } = extractions
+    updateVenture(activeVentureId, {
+      interviews: {
+        uploads: nextUploads,
+        extractions: nextExtractions,
+        synthesis,
+      },
+    })
+  }
 
   const handleGenerate = async () => {
     if (!venture || !activeVentureId) return
+    const hasInput = pilotNotes.trim() || pilotUploads.length > 0
+    if (!hasInput) return
     setApiError(null)
     setLoading(true)
     try {
       const companyList = companyNames.split(/[,;]/).map((s) => s.trim()).filter(Boolean)
-      const systemBlocks = await buildClientFeedbackBlocks(venture, pilotNotes, companyList)
+      const pilotTranscripts = pilotUploads.map((u) => ({
+        transcript: u.transcript,
+        company: u.intervieweeCompany,
+      }))
+      const systemBlocks = await buildClientFeedbackBlocks(
+        venture,
+        pilotNotes,
+        companyList,
+        pilotTranscripts
+      )
       const resp = await anthropicProvider.chat({
         systemPrompt: [
           ...systemBlocks,
@@ -97,12 +184,82 @@ export function ClientFeedback() {
         <ApiErrorBanner message={apiError} onDismiss={() => setApiError(null)} />
 
         <div className="rounded-xl p-6 mb-6" style={CARD}>
+          <h2 className="font-heading font-semibold text-lg mb-2">Upload pilot transcripts</h2>
+          <p className="text-xs text-[var(--text-muted)] mb-3">
+            Upload .txt or .md transcript files, or paste transcript text. Each transcript is stored and included when generating the summary.
+          </p>
+          <div className="flex gap-2 mb-3">
+            <input
+              type="file"
+              accept=".txt,.md"
+              onChange={handleFileSelect}
+              className="hidden"
+              id="pilot-transcript-file"
+            />
+            <label
+              htmlFor="pilot-transcript-file"
+              className="px-3 py-2 rounded-lg text-sm font-medium border border-[var(--border)] cursor-pointer hover:bg-[rgba(124,106,247,0.1)] text-[var(--text-primary)]"
+            >
+              Choose file
+            </label>
+            <input
+              value={transcriptCompany}
+              onChange={(e) => setTranscriptCompany(e.target.value)}
+              placeholder="Company name"
+              className="flex-1 px-3 py-2 rounded-lg bg-[rgba(20,16,36,0.5)] border border-[var(--border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] text-sm"
+            />
+            <button
+              type="button"
+              onClick={handleAddTranscript}
+              disabled={!transcriptPaste.trim()}
+              className="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--accent-primary)] text-white border-none cursor-pointer hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Add transcript
+            </button>
+          </div>
+          <textarea
+            value={transcriptPaste}
+            onChange={(e) => setTranscriptPaste(e.target.value)}
+            placeholder="Paste transcript text here (or use file upload above)"
+            rows={4}
+            className="w-full px-3 py-2 rounded-lg bg-[rgba(20,16,36,0.5)] border border-[var(--border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent-primary)] outline-none text-sm resize-y"
+          />
+          {pilotUploads.length > 0 && (
+            <div className="mt-4">
+              <h3 className="font-heading font-semibold text-sm mb-2 text-[var(--text-primary)]">
+                Uploaded transcripts ({pilotUploads.length})
+              </h3>
+              <ul className="space-y-2">
+                {pilotUploads.map((u) => (
+                  <li
+                    key={u.id}
+                    className="flex items-center justify-between gap-2 rounded-lg p-2"
+                    style={{ background: 'rgba(20,16,36,0.5)', border: '1px solid var(--border)' }}
+                  >
+                    <span className="text-sm truncate">
+                      {u.intervieweeCompany} — {u.transcript.slice(0, 60)}...
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveTranscript(u.id)}
+                      className="text-xs text-[var(--text-muted)] hover:text-[#EF4444] shrink-0"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-xl p-6 mb-6" style={CARD}>
           <h2 className="font-heading font-semibold text-lg mb-2">Pilot feedback notes</h2>
           <textarea
             value={pilotNotes}
             onChange={(e) => setPilotNotes(e.target.value)}
-            placeholder="Paste or type notes from pilot clients. You can separate by client using '--- Company Name ---' or leave as one block."
-            rows={8}
+            placeholder="Paste or type additional notes from pilot clients. You can separate by client using '--- Company Name ---' or leave as one block."
+            rows={6}
             className="w-full px-3 py-2 rounded-lg bg-[rgba(20,16,36,0.5)] border border-[var(--border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent-primary)] outline-none text-sm resize-y"
           />
           <div className="mt-2">
@@ -119,7 +276,7 @@ export function ClientFeedback() {
         <div className="flex items-center gap-3 mb-6">
           <button
             onClick={handleGenerate}
-            disabled={loading || !pilotNotes.trim()}
+            disabled={loading || (!pilotNotes.trim() && pilotUploads.length === 0)}
             className="px-6 py-3 rounded-lg font-heading font-semibold text-sm bg-[var(--accent-primary)] text-white border-none cursor-pointer hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Synthesising...' : summary ? 'Regenerate Summary' : 'Generate Summary'}

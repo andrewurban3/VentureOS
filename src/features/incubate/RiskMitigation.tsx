@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useVentures } from '@/context/VentureContext'
 import { aiService } from '@/services/ai'
 import { buildRiskRegisterBlocks } from '@/agents/incubate'
+import { logActivity } from '@/services/activityFeed'
 import { ApiErrorBanner } from '@/components/ApiErrorBanner'
 import { SourceChip } from '@/components/SourceChip'
 import type { RiskRegister, RiskItem, RiskCategory, RiskLevel } from '@/types/venture'
@@ -115,6 +116,11 @@ export function RiskMitigation() {
         founderNotes: rr?.founderNotes,
       }
       updateVenture(activeVentureId, { riskRegister: register })
+      logActivity({
+        ventureId: activeVentureId,
+        action: 'risk_added',
+        details: { count: register.risks.length, source: 'AI_SYNTHESIS' },
+      }).catch(() => {})
       // #region agent log
       fetch('http://127.0.0.1:7526/ingest/2e1cc1bb-e928-47a7-9500-4d4a43c53b51',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f586c6'},body:JSON.stringify({sessionId:'f586c6',location:'RiskMitigation.tsx:handleGenerate',message:'Risk register generated OK',data:{ventureId:activeVentureId,riskCount:register.risks.length},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
       // #endregion
@@ -157,6 +163,13 @@ export function RiskMitigation() {
       ? { ...rr, risks: [...rr.risks, risk] }
       : { risks: [risk], generatedAt: new Date().toISOString() }
     updateVenture(activeVentureId, { riskRegister: register })
+    logActivity({
+      ventureId: activeVentureId,
+      action: 'risk_added',
+      entityType: 'risk',
+      entityId: risk.id,
+      details: { description: risk.description },
+    }).catch(() => {})
     setAddingNew(false)
     setNewRisk({ category: 'market', likelihood: 'Medium', impact: 'Medium', source: 'FOUNDER' })
   }
